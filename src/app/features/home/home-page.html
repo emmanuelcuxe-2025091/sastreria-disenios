@@ -1,0 +1,153 @@
+<section class="hero">
+  <div class="container hero-grid">
+    <div class="hero-content">
+      <span class="eyebrow">Archivo de Confección · Desde {{ env.company.foundedYear }}</span>
+      <h1 class="hero-title">
+        Prendas que narran <em>{{ yearsInBusiness }} años</em> de sastrería y oficio.
+      </h1>
+      <p class="hero-lead">
+        Este catálogo reúne una selección curada de los trajes, piezas de gala, abrigos y camisería
+        que nuestra firma ha confeccionado a lo largo de su trayectoria para clientes particulares y
+        organizaciones exigentes.
+      </p>
+
+      <div class="hero-actions">
+        <a class="btn btn-primary" routerLink="/catalogo">Explorar catálogo</a>
+        <a class="btn btn-outline" routerLink="/trayectoria">Conocer trayectoria</a>
+      </div>
+
+      <dl class="hero-stats" aria-label="Cifras de trayectoria">
+        <div class="stat-item">
+          <dt>Años de oficio</dt>
+          <dd>+{{ yearsInBusiness }}</dd>
+        </div>
+        <div class="stat-item">
+          <dt>Prendas a medida</dt>
+          <dd>+1,400</dd>
+        </div>
+        <div class="stat-item">
+          <dt>Confección artesanal</dt>
+          <dd>100%</dd>
+        </div>
+      </dl>
+    </div>
+
+    <figure class="hero-visual">
+      <div class="hero-image-wrap">
+        <img
+          src="images/catalog/hero-atelier.jpg"
+          alt="Taller artesanal de Sastrería y Diseños con saco de lana sobre maniquí, telas italianas y tijeras de corte"
+          loading="eager"
+          fetchpriority="high"
+        />
+      </div>
+      <figcaption class="hero-caption">
+        <span class="caption-code">Taller Central · Patronaje Propio</span>
+        <span class="caption-note">Corte individual a tiza, lana merino y entretela flotante.</span>
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="section section-featured" aria-labelledby="featured-heading">
+  <div class="container">
+    <div class="section-row">
+      <app-section-header
+        eyebrow="Selección Curada"
+        title="Piezas emblemáticas de nuestro archivo"
+        description="Una muestra representativa de los cortes, tejidos nobles y acabados manuales que distinguen el trabajo de la casa."
+      />
+      <a class="btn btn-ghost" routerLink="/catalogo">
+        Ver las {{ catalog.totalGarments() }} piezas del catálogo →
+      </a>
+    </div>
+
+    <div class="garment-grid">
+      @for (garment of catalog.featuredGarments(); track garment.id; let first = $first) {
+        <app-garment-card [garment]="garment" [priority]="first" />
+      }
+    </div>
+  </div>
+</section>
+
+<section class="section section-categories" aria-labelledby="categories-heading">
+  <div class="container">
+    <app-section-header
+      eyebrow="Especialidades"
+      title="Líneas de confección desarrolladas en el taller"
+      description="Cada especialidad responde a un lenguaje propio de patronaje, estructura interna y selección textil."
+    />
+
+    <div class="category-grid">
+      @for (category of catalog.categories; track category.id; let idx = $index) {
+        <a
+          class="category-card"
+          [routerLink]="['/catalogo']"
+          [queryParams]="{ categoria: category.id }"
+        >
+          <div class="category-top">
+            <span class="category-index">0{{ idx + 1 }}</span>
+            <span class="category-count">
+              {{ catalog.categoryCounts().get(category.id) ?? 0 }}
+              {{ (catalog.categoryCounts().get(category.id) ?? 0) === 1 ? 'pieza' : 'piezas' }}
+            </span>
+          </div>
+          <h3 class="category-title">{{ category.label }}</h3>
+          <p class="category-desc">{{ category.description }}</p>
+          <span class="category-link">Explorar línea →</span>
+        </a>
+      }
+    </div>
+  </div>
+</section>
+
+<section class="section section-craft" aria-labelledby="craft-heading">
+  <div class="container">
+    <app-section-header
+      eyebrow="El Oficio"
+      title="Cómo se construye una prenda diseñada para perdurar"
+      description="Detrás de cada fotografía del catálogo existen decenas de horas de patronaje individual, planchado de forma y costura manual."
+    />
+
+    <div class="pillars-grid">
+      @for (pillar of catalog.pillars; track pillar.step) {
+        <article class="pillar-card">
+          <div class="pillar-head">
+            <span class="pillar-step">{{ pillar.step }}</span>
+            <span class="pillar-metric">{{ pillar.metric }}</span>
+          </div>
+          <h3 class="pillar-title">{{ pillar.title }}</h3>
+          <p class="pillar-desc">{{ pillar.description }}</p>
+        </article>
+      }
+    </div>
+  </div>
+</section>
+
+<section class="section-heritage-band" aria-label="Resumen de trayectoria">
+  <div class="container heritage-band-inner">
+    <div class="heritage-intro">
+      <span class="eyebrow eyebrow-light">Trayectoria 1998 – 2026</span>
+      <h2 class="heritage-title">
+        Casi tres décadas vistiendo momentos decisivos y equipos directivos.
+      </h2>
+      <p class="heritage-copy">
+        Desde nuestro primer taller familiar hasta las colecciones contemporáneas de gala y
+        sastrería femenina, cada etapa dejó piezas de referencia que hoy respaldan nuestra firma.
+      </p>
+      <a class="btn btn-light" routerLink="/trayectoria">Recorrer nuestra historia</a>
+    </div>
+
+    <ol class="heritage-preview-list">
+      @for (milestone of catalog.milestones().slice(0, 4); track milestone.id) {
+        <li class="heritage-preview-item">
+          <span class="milestone-year">{{ milestone.year }}</span>
+          <div>
+            <h3>{{ milestone.title }}</h3>
+            <p>{{ milestone.subtitle }}</p>
+          </div>
+        </li>
+      }
+    </ol>
+  </div>
+</section>

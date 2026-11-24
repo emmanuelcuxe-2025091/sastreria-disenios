@@ -1,0 +1,212 @@
+.catalog-hero {
+  padding-block: clamp(2.5rem, 5vw, 4rem) 2.25rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.catalog-hero-inner {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1.5rem;
+}
+
+.archive-badge {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding: 1rem 1.35rem;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+
+.archive-count {
+  font-family: var(--font-display);
+  font-size: 2.35rem;
+  line-height: 1;
+  color: var(--color-accent);
+}
+
+.archive-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+  margin-top: 0.25rem;
+}
+
+.catalog-controls {
+  padding-block: 1.5rem;
+  background-color: var(--color-bg-alt);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.controls-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+}
+
+.search-and-selects {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+.search-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.85rem 2.6rem 0.85rem 1rem;
+  border: 1px solid var(--color-border-strong);
+  background-color: var(--color-surface);
+  color: var(--color-ink);
+  font-size: 0.92rem;
+
+  &::placeholder {
+    color: var(--color-ink-muted);
+  }
+}
+
+.clear-btn {
+  position: absolute;
+  right: 0.65rem;
+  border: 0;
+  background: transparent;
+  color: var(--color-ink-muted);
+  cursor: pointer;
+  padding: 0.35rem;
+  font-size: 0.85rem;
+
+  &:hover {
+    color: var(--color-ink);
+  }
+}
+
+.select-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 0.85rem;
+}
+
+.control-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+}
+
+.control-select {
+  padding: 0.72rem 0.85rem;
+  border: 1px solid var(--color-border-strong);
+  background-color: var(--color-surface);
+  color: var(--color-ink);
+  font-size: 0.88rem;
+  cursor: pointer;
+}
+
+.category-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.52rem 0.95rem;
+  border: 1px solid var(--color-border-strong);
+  background-color: var(--color-surface);
+  color: var(--color-ink-soft);
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+
+  &:hover {
+    border-color: var(--color-ink);
+    color: var(--color-ink);
+  }
+
+  &.is-active {
+    background-color: var(--color-navy);
+    border-color: var(--color-navy);
+    color: var(--color-navy-ink);
+
+    .chip-count {
+      color: #d0b282;
+    }
+  }
+}
+
+.chip-count {
+  font-size: 0.72rem;
+  color: var(--color-ink-muted);
+}
+
+.catalog-results {
+  padding-block: 2.5rem 2rem;
+}
+
+.results-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1.75rem;
+}
+
+.results-summary {
+  font-size: 0.88rem;
+  color: var(--color-ink-soft);
+}
+
+.reset-link {
+  border: 0;
+  border-bottom: 1px solid var(--color-accent);
+  background: transparent;
+  padding: 0.15rem 0;
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  cursor: pointer;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 1rem;
+  padding: 4rem 1.5rem;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+
+  h3 {
+    font-size: 1.85rem;
+  }
+
+  p {
+    max-width: 48ch;
+    color: var(--color-ink-soft);
+  }
+}
+
+@media (min-width: 960px) {
+  .search-and-selects {
+    grid-template-columns: 1.35fr 1fr;
+    align-items: end;
+  }
+}

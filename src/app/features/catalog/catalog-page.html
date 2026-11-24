@@ -1,0 +1,138 @@
+<section class="catalog-hero">
+  <div class="container catalog-hero-inner">
+    <app-section-header
+      eyebrow="Archivo de Prendas · 1998 – 2026"
+      title="Catálogo de Confección"
+      headingLevel="h1"
+      description="Explore las prendas elaboradas por nuestra casa a lo largo de su trayectoria. Filtre por especialidad, época o busque por tejido, técnica o colección."
+    />
+
+    <div class="archive-badge" aria-label="Resumen del archivo">
+      <span class="archive-count">{{ catalog.totalGarments() }}</span>
+      <span class="archive-label">Prendas documentadas</span>
+    </div>
+  </div>
+</section>
+
+<section class="catalog-controls" aria-label="Filtros del catálogo">
+  <div class="container controls-stack">
+    <div class="search-and-selects">
+      <div class="search-field">
+        <label class="sr-only" for="catalog-search">Buscar prendas en el catálogo</label>
+        <input
+          id="catalog-search"
+          type="search"
+          class="search-input"
+          placeholder="Buscar por nombre, tejido (cachemira, lino, lana...), código o año..."
+          [value]="catalog.filter().search"
+          (input)="onSearchInput($event)"
+        />
+        @if (catalog.filter().search) {
+          <button
+            type="button"
+            class="clear-btn"
+            aria-label="Limpiar búsqueda"
+            (click)="clearSearch()"
+          >
+            ✕
+          </button>
+        }
+      </div>
+
+      <div class="select-group">
+        <label class="control-label">
+          <span>Época</span>
+          <select
+            class="control-select"
+            [value]="catalog.filter().era"
+            (change)="onEraChange($event)"
+          >
+            <option value="all">Todas las épocas</option>
+            @for (era of catalog.eras; track era.id) {
+              <option [value]="era.id">{{ era.label }} · {{ era.subtitle }}</option>
+            }
+          </select>
+        </label>
+
+        <label class="control-label">
+          <span>Ordenar</span>
+          <select
+            class="control-select"
+            [value]="catalog.filter().sort"
+            (change)="onSortChange($event)"
+          >
+            <option value="recent">Más recientes primero</option>
+            <option value="archive">Cronología histórica</option>
+            <option value="name-asc">Alfabético (A–Z)</option>
+          </select>
+        </label>
+      </div>
+    </div>
+
+    <div class="category-bar" role="group" aria-label="Filtrar por especialidad">
+      <button
+        type="button"
+        class="filter-chip"
+        [class.is-active]="catalog.filter().category === 'all'"
+        [attr.aria-pressed]="catalog.filter().category === 'all'"
+        (click)="selectCategory('all')"
+      >
+        Todas
+        <span class="chip-count">{{ catalog.totalGarments() }}</span>
+      </button>
+
+      @for (category of catalog.categories; track category.id) {
+        <button
+          type="button"
+          class="filter-chip"
+          [class.is-active]="catalog.filter().category === category.id"
+          [attr.aria-pressed]="catalog.filter().category === category.id"
+          (click)="selectCategory(category.id)"
+        >
+          {{ category.label }}
+          <span class="chip-count">{{ catalog.categoryCounts().get(category.id) ?? 0 }}</span>
+        </button>
+      }
+    </div>
+  </div>
+</section>
+
+<section class="catalog-results">
+  <div class="container">
+    <div class="results-bar" aria-live="polite">
+      <p class="results-summary">
+        Mostrando <strong>{{ catalog.filteredGarments().length }}</strong>
+        {{ catalog.filteredGarments().length === 1 ? 'prenda' : 'prendas' }}
+        @if (catalog.activeFilterCount() > 0) {
+          <span>con filtros activos</span>
+        }
+      </p>
+
+      @if (catalog.activeFilterCount() > 0) {
+        <button type="button" class="reset-link" (click)="resetFilters()">
+          Restablecer filtros
+        </button>
+      }
+    </div>
+
+    @if (catalog.filteredGarments().length > 0) {
+      <div class="garment-grid">
+        @for (garment of catalog.filteredGarments(); track garment.id; let idx = $index) {
+          <app-garment-card [garment]="garment" [priority]="idx < 3" />
+        }
+      </div>
+    } @else {
+      <div class="empty-state">
+        <span class="eyebrow">Sin coincidencias</span>
+        <h3>No encontramos prendas con los criterios seleccionados</h3>
+        <p>
+          Pruebe con otro tejido, cambie la época histórica o restablezca los filtros para ver todo
+          el archivo de la empresa.
+        </p>
+        <button type="button" class="btn btn-primary" (click)="resetFilters()">
+          Ver catálogo completo
+        </button>
+      </div>
+    }
+  </div>
+</section>

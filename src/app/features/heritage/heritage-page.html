@@ -1,0 +1,62 @@
+<section class="heritage-hero">
+  <div class="container heritage-hero-grid">
+    <app-section-header
+      eyebrow="Historia y Trayectoria · Desde 1998"
+      title="Un oficio heredado puntada a puntada"
+      headingLevel="h1"
+      description="Cada década ha perfeccionado nuestra técnica de patronaje, selección textil y acompañamiento personalizado. Recorra los hitos que dieron forma a nuestro catálogo."
+    />
+
+    <blockquote class="atelier-quote">
+      <p>
+        “Una prenda verdaderamente bien hecha no impone rigidez: acompaña la postura, envejece con
+        dignidad y guarda la memoria de quien la viste.”
+      </p>
+      <footer>— Dirección Maestra de Patronaje, {{ env.company.name }}</footer>
+    </blockquote>
+  </div>
+</section>
+
+<section class="timeline-section" aria-label="Línea de tiempo histórica">
+  <div class="container">
+    <ol class="timeline">
+      @for (milestone of catalog.milestones(); track milestone.id) {
+        <li class="timeline-item">
+          <div class="timeline-year-col">
+            <span class="timeline-year">{{ milestone.year }}</span>
+            <span class="timeline-metric">{{ milestone.highlightMetric }}</span>
+          </div>
+
+          <div class="timeline-card">
+            <p class="timeline-subtitle">{{ milestone.subtitle }}</p>
+            <h2 class="timeline-title">{{ milestone.title }}</h2>
+            <p class="timeline-desc">{{ milestone.description }}</p>
+
+            @if (milestone.signatureGarmentSlug) {
+              <a
+                class="timeline-link"
+                [routerLink]="['/catalogo', milestone.signatureGarmentSlug]"
+              >
+                Ver prenda representativa de esta etapa →
+              </a>
+            }
+          </div>
+        </li>
+      }
+    </ol>
+  </div>
+</section>
+
+<section class="closing-cta">
+  <div class="container closing-box">
+    <div>
+      <span class="eyebrow">Archivo Abierto</span>
+      <h2>Conozca de cerca la calidad de nuestras confecciones</h2>
+      <p>
+        Revise las fichas técnicas, tejidos y detalles artesanales de cada prenda documentada en el
+        catálogo de la empresa.
+      </p>
+    </div>
+    <a class="btn btn-primary" routerLink="/catalogo">Ir al catálogo de prendas</a>
+  </div>
+</section>
