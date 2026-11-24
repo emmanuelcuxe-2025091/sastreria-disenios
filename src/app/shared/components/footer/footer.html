@@ -19,14 +19,12 @@
       <h3 class="col-title">Secciones</h3>
       <ul class="col-list">
         <li><a routerLink="/">Inicio</a></li>
-        <li><a href="#piezas">Piezas del archivo</a></li>
-        <li><a href="#especialidades">Especialidades</a></li>
-        <li><a href="#oficio">El oficio</a></li>
+        <li><a href="#piezas">Catálogo de prendas</a></li>
       </ul>
     </div>
 
     <div class="footer-col">
-      <h3 class="col-title">Especialidades</h3>
+      <h3 class="col-title">Tipos de Prenda</h3>
       <ul class="col-list">
         @for (category of catalog.categories; track category.id) {
           <li>{{ category.label }}</li>

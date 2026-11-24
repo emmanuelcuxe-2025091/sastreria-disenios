@@ -58,7 +58,7 @@ sastreria-disenios/
         │   └── services/             # CatalogStateService (Signals) y AtelierTitleStrategy
         ├── shared/components/        # Header, Footer, GarmentCard y SectionHeader
         └── features/
-            ├── home/                 # Página principal con portada editorial, catálogo de prendas, especialidades y oficio
+            ├── home/                 # Página principal con portada editorial, búsqueda, filtros por tipo de prenda y grilla
             ├── garment-detail/       # Ficha técnica completa y galería por prenda (/prenda/:slug)
             └── not-found/            # Página 404
 ```

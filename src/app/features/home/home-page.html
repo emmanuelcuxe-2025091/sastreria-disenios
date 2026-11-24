@@ -13,7 +13,6 @@
 
       <div class="hero-actions">
         <a class="btn btn-primary" href="#piezas">Explorar prendas</a>
-        <a class="btn btn-outline" href="#oficio">Conocer el oficio</a>
       </div>
 
       <dl class="hero-stats" aria-label="Cifras de trayectoria">
@@ -49,96 +48,100 @@
   </div>
 </section>
 
-<section id="piezas" class="section section-featured" aria-label="Piezas emblemáticas de nuestro archivo">
+<section id="piezas" class="section section-featured" aria-label="Catálogo de prendas">
   <div class="container">
     <div class="section-row">
       <app-section-header
-        eyebrow="Selección Curada"
+        eyebrow="Catálogo de Prendas"
         title="Piezas emblemáticas de nuestro archivo"
-        description="Una muestra representativa de los cortes, tejidos nobles y acabados manuales que distinguen el trabajo de la casa."
+        description="Explore nuestras confecciones filtrando por tipo de ropa o buscando por nombre, tejido, colección o año."
       />
     </div>
 
-    <div class="garment-grid">
-      @for (garment of catalog.garments(); track garment.id; let idx = $index) {
-        <app-garment-card [garment]="garment" [priority]="idx < 3" />
-      }
-    </div>
-  </div>
-</section>
+    <div class="catalog-toolbar" aria-label="Búsqueda y filtros por tipo de ropa">
+      <div class="search-field">
+        <label class="sr-only" for="garment-search">Buscar prendas</label>
+        <input
+          id="garment-search"
+          type="search"
+          class="search-input"
+          placeholder="Buscar por nombre, tejido (lana, cachemira, lino...), código o año..."
+          [value]="catalog.filter().search"
+          (input)="onSearchInput($event)"
+        />
+        @if (catalog.filter().search) {
+          <button
+            type="button"
+            class="clear-btn"
+            aria-label="Limpiar búsqueda"
+            (click)="clearSearch()"
+          >
+            ✕
+          </button>
+        }
+      </div>
 
-<section id="especialidades" class="section section-categories" aria-label="Especialidades del taller">
-  <div class="container">
-    <app-section-header
-      eyebrow="Especialidades"
-      title="Líneas de confección desarrolladas en el taller"
-      description="Cada especialidad responde a un lenguaje propio de patronaje, estructura interna y selección textil."
-    />
+      <div class="category-bar" role="group" aria-label="Filtrar por tipo de ropa">
+        <button
+          type="button"
+          class="filter-chip"
+          [class.is-active]="catalog.filter().category === 'all'"
+          [attr.aria-pressed]="catalog.filter().category === 'all'"
+          (click)="selectCategory('all')"
+        >
+          Todas
+          <span class="chip-count">{{ catalog.totalGarments() }}</span>
+        </button>
 
-    <div class="category-grid">
-      @for (category of catalog.categories; track category.id; let idx = $index) {
-        <article class="category-card">
-          <div class="category-top">
-            <span class="category-index">0{{ idx + 1 }}</span>
-            <span class="category-count">
-              {{ catalog.categoryCounts().get(category.id) ?? 0 }}
-              {{ (catalog.categoryCounts().get(category.id) ?? 0) === 1 ? 'pieza' : 'piezas' }}
-            </span>
-          </div>
-          <h3 class="category-title">{{ category.label }}</h3>
-          <p class="category-desc">{{ category.description }}</p>
-        </article>
-      }
-    </div>
-  </div>
-</section>
+        @for (category of catalog.categories; track category.id) {
+          <button
+            type="button"
+            class="filter-chip"
+            [class.is-active]="catalog.filter().category === category.id"
+            [attr.aria-pressed]="catalog.filter().category === category.id"
+            (click)="selectCategory(category.id)"
+          >
+            {{ category.label }}
+            <span class="chip-count">{{ catalog.categoryCounts().get(category.id) ?? 0 }}</span>
+          </button>
+        }
+      </div>
 
-<section id="oficio" class="section section-craft" aria-label="El oficio de la sastrería">
-  <div class="container">
-    <app-section-header
-      eyebrow="El Oficio"
-      title="Cómo se construye una prenda diseñada para perdurar"
-      description="Detrás de cada fotografía del catálogo existen decenas de horas de patronaje individual, planchado de forma y costura manual."
-    />
+      <div class="results-bar" aria-live="polite">
+        <p class="results-summary">
+          Mostrando <strong>{{ catalog.filteredGarments().length }}</strong>
+          {{ catalog.filteredGarments().length === 1 ? 'prenda' : 'prendas' }}
+          @if (catalog.activeFilterCount() > 0) {
+            <span>con filtros activos</span>
+          }
+        </p>
 
-    <div class="pillars-grid">
-      @for (pillar of catalog.pillars; track pillar.step) {
-        <article class="pillar-card">
-          <div class="pillar-head">
-            <span class="pillar-step">{{ pillar.step }}</span>
-            <span class="pillar-metric">{{ pillar.metric }}</span>
-          </div>
-          <h3 class="pillar-title">{{ pillar.title }}</h3>
-          <p class="pillar-desc">{{ pillar.description }}</p>
-        </article>
-      }
-    </div>
-  </div>
-</section>
-
-<section id="trayectoria" class="section-heritage-band" aria-label="Resumen de trayectoria">
-  <div class="container heritage-band-inner">
-    <div class="heritage-intro">
-      <span class="eyebrow eyebrow-light">Trayectoria 1998 – 2026</span>
-      <h2 class="heritage-title">
-        Casi tres décadas vistiendo momentos decisivos y equipos directivos.
-      </h2>
-      <p class="heritage-copy">
-        Desde nuestro primer taller familiar hasta las colecciones contemporáneas de gala y
-        sastrería femenina, cada etapa dejó piezas de referencia que hoy respaldan nuestra firma.
-      </p>
+        @if (catalog.activeFilterCount() > 0) {
+          <button type="button" class="reset-link" (click)="resetFilters()">
+            Restablecer filtros
+          </button>
+        }
+      </div>
     </div>
 
-    <ol class="heritage-preview-list">
-      @for (milestone of catalog.milestones().slice(0, 4); track milestone.id) {
-        <li class="heritage-preview-item">
-          <span class="milestone-year">{{ milestone.year }}</span>
-          <div>
-            <h3>{{ milestone.title }}</h3>
-            <p>{{ milestone.subtitle }}</p>
-          </div>
-        </li>
-      }
-    </ol>
+    @if (catalog.filteredGarments().length > 0) {
+      <div class="garment-grid">
+        @for (garment of catalog.filteredGarments(); track garment.id; let idx = $index) {
+          <app-garment-card [garment]="garment" [priority]="idx < 3" />
+        }
+      </div>
+    } @else {
+      <div class="empty-state">
+        <span class="eyebrow">Sin coincidencias</span>
+        <h3>No encontramos prendas con los criterios seleccionados</h3>
+        <p>
+          Pruebe con otro término de búsqueda o restablezca los filtros para ver todas las prendas
+          del catálogo.
+        </p>
+        <button type="button" class="btn btn-primary" (click)="resetFilters()">
+          Ver todas las prendas
+        </button>
+      </div>
+    }
   </div>
 </section>

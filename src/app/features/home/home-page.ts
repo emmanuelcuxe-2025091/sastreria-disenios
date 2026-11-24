@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
 import { APP_ENVIRONMENT } from '../../core/config/catalog.tokens';
+import { GarmentCategory } from '../../core/models/catalog.models';
 import { CatalogStateService } from '../../core/services/catalog-state.service';
 import { GarmentCardComponent } from '../../shared/components/garment-card/garment-card';
 import { SectionHeaderComponent } from '../../shared/components/section-header/section-header';
@@ -19,5 +20,22 @@ export class HomePageComponent implements OnInit {
 
   ngOnInit(): void {
     void this.catalog.ensureLoaded();
+  }
+
+  protected onSearchInput(event: Event): void {
+    const value = (event.target as HTMLInputElement).value;
+    this.catalog.setSearch(value);
+  }
+
+  protected clearSearch(): void {
+    this.catalog.setSearch('');
+  }
+
+  protected selectCategory(category: GarmentCategory | 'all'): void {
+    this.catalog.setCategory(category);
+  }
+
+  protected resetFilters(): void {
+    this.catalog.resetFilters();
   }
 }
