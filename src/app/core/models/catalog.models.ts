@@ -69,7 +69,7 @@ export interface CompanyMilestone {
 
 export interface CatalogFilter {
   readonly search: string;
-  readonly category: GarmentCategory | 'all';
+  readonly categories: readonly GarmentCategory[];
   readonly era: GarmentEra | 'all';
   readonly sort: CatalogSortOption;
 }

@@ -13,7 +13,7 @@ import {
 
 const DEFAULT_FILTER: CatalogFilter = {
   search: '',
-  category: 'all',
+  categories: [],
   era: 'all',
   sort: 'recent',
 };
@@ -53,11 +53,11 @@ export class CatalogStateService {
   );
 
   readonly filteredGarments = computed(() => {
-    const { search, category, era, sort } = this._filter();
+    const { search, categories, era, sort } = this._filter();
     const query = normalizeText(search);
 
     const matching = this._garments().filter((garment) => {
-      if (category !== 'all' && garment.category !== category) {
+      if (categories.length > 0 && !categories.includes(garment.category)) {
         return false;
       }
       if (era !== 'all' && garment.era !== era) {
@@ -99,9 +99,8 @@ export class CatalogStateService {
 
   readonly activeFilterCount = computed(() => {
     const f = this._filter();
-    let count = 0;
+    let count = f.categories.length;
     if (f.search.trim().length > 0) count++;
-    if (f.category !== 'all') count++;
     if (f.era !== 'all') count++;
     return count;
   });
@@ -160,8 +159,22 @@ export class CatalogStateService {
     this._filter.update((current) => ({ ...current, search }));
   }
 
-  setCategory(category: GarmentCategory | 'all'): void {
-    this._filter.update((current) => ({ ...current, category }));
+  toggleCategory(category: GarmentCategory): void {
+    this._filter.update((current) => {
+      const exists = current.categories.includes(category);
+      const categories = exists
+        ? current.categories.filter((item) => item !== category)
+        : [...current.categories, category];
+      return { ...current, categories };
+    });
+  }
+
+  clearCategories(): void {
+    this._filter.update((current) => ({ ...current, categories: [] }));
+  }
+
+  isCategorySelected(category: GarmentCategory): boolean {
+    return this._filter().categories.includes(category);
   }
 
   setEra(era: GarmentEra | 'all'): void {

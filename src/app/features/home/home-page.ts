@@ -31,8 +31,20 @@ export class HomePageComponent implements OnInit {
     this.catalog.setSearch('');
   }
 
-  protected selectCategory(category: GarmentCategory | 'all'): void {
-    this.catalog.setCategory(category);
+  protected selectAllCategories(): void {
+    this.catalog.clearCategories();
+  }
+
+  protected toggleCategory(category: GarmentCategory): void {
+    this.catalog.toggleCategory(category);
+  }
+
+  protected isAllSelected(): boolean {
+    return this.catalog.filter().categories.length === 0;
+  }
+
+  protected isCategorySelected(category: GarmentCategory): boolean {
+    return this.catalog.isCategorySelected(category);
   }
 
   protected resetFilters(): void {

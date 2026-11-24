@@ -23,13 +23,28 @@ describe('CatalogStateService', () => {
     expect(service.featuredGarments().length).toBeGreaterThan(0);
   });
 
-  it('filters garments by category and updates active filter count', () => {
-    service.setCategory('gala-y-etiqueta');
+  it('supports selecting and toggling multiple garment categories simultaneously', () => {
+    service.toggleCategory('gala-y-etiqueta');
+    service.toggleCategory('abrigos-y-capas');
 
     const results = service.filteredGarments();
-    expect(results.length).toBeGreaterThan(0);
-    expect(results.every((item) => item.category === 'gala-y-etiqueta')).toBe(true);
+    expect(results.length).toBe(3);
+    expect(
+      results.every(
+        (item) => item.category === 'gala-y-etiqueta' || item.category === 'abrigos-y-capas',
+      ),
+    ).toBe(true);
+    expect(service.activeFilterCount()).toBe(2);
+
+    service.toggleCategory('abrigos-y-capas');
+    expect(service.filteredGarments().every((item) => item.category === 'gala-y-etiqueta')).toBe(
+      true,
+    );
     expect(service.activeFilterCount()).toBe(1);
+
+    service.clearCategories();
+    expect(service.activeFilterCount()).toBe(0);
+    expect(service.filteredGarments().length).toBe(service.totalGarments());
   });
 
   it('supports accent-insensitive search across fabric and name', () => {
@@ -51,10 +66,10 @@ describe('CatalogStateService', () => {
   it('resets all active filters cleanly', () => {
     service.patchFilter({
       search: 'lino',
-      category: 'trajes-a-medida',
+      categories: ['trajes-a-medida', 'camiseria-artesanal'],
       era: '2016-2021',
     });
-    expect(service.activeFilterCount()).toBe(3);
+    expect(service.activeFilterCount()).toBe(4);
 
     service.resetFilters();
     expect(service.activeFilterCount()).toBe(0);

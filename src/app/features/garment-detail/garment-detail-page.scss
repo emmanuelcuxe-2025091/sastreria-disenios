@@ -186,34 +186,8 @@
   }
 }
 
-.inquiry-panel {
+.dossier-actions {
   margin-top: 0.5rem;
-  padding: 1.5rem;
-  background-color: var(--color-surface);
-  border: 1px solid var(--color-border-strong);
-  display: flex;
-  flex-direction: column;
-  gap: 1.15rem;
-}
-
-.inquiry-eyebrow {
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: var(--color-accent);
-  margin-bottom: 0.35rem;
-}
-
-.inquiry-text {
-  font-size: 0.9rem;
-  color: var(--color-ink-soft);
-}
-
-.inquiry-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.85rem;
 }
 
 .related-section {

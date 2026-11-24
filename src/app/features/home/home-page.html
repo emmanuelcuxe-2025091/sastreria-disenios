@@ -85,9 +85,9 @@
         <button
           type="button"
           class="filter-chip"
-          [class.is-active]="catalog.filter().category === 'all'"
-          [attr.aria-pressed]="catalog.filter().category === 'all'"
-          (click)="selectCategory('all')"
+          [class.is-active]="isAllSelected()"
+          [attr.aria-pressed]="isAllSelected()"
+          (click)="selectAllCategories()"
         >
           Todas
           <span class="chip-count">{{ catalog.totalGarments() }}</span>
@@ -97,9 +97,9 @@
           <button
             type="button"
             class="filter-chip"
-            [class.is-active]="catalog.filter().category === category.id"
-            [attr.aria-pressed]="catalog.filter().category === category.id"
-            (click)="selectCategory(category.id)"
+            [class.is-active]="isCategorySelected(category.id)"
+            [attr.aria-pressed]="isCategorySelected(category.id)"
+            (click)="toggleCategory(category.id)"
           >
             {{ category.label }}
             <span class="chip-count">{{ catalog.categoryCounts().get(category.id) ?? 0 }}</span>

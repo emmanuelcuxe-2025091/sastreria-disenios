@@ -50,16 +50,6 @@ export class GarmentDetailPageComponent implements OnInit {
     return item ? this.catalog.getRelatedGarments(item, 3) : [];
   });
 
-  protected readonly mailtoInquiryUrl = computed(() => {
-    const item = this.garment();
-    if (!item) return `mailto:${this.env.company.email}`;
-    const subject = encodeURIComponent(`Consulta de referencia ${item.code} — ${item.name}`);
-    const body = encodeURIComponent(
-      `Estimado equipo de ${this.env.company.name},\n\nMe interesa conocer más detalles sobre una confección inspirada en la prenda "${item.name}" (Ref. ${item.code}, ${item.year}).\n\nQuedo atento(a) para coordinar una cita en el taller.`,
-    );
-    return `mailto:${this.env.company.email}?subject=${subject}&body=${body}`;
-  });
-
   constructor() {
     effect(() => {
       const current = this.garment();
