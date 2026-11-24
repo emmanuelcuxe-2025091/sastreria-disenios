@@ -12,13 +12,13 @@
 }
 
 .section-title {
-  font-size: clamp(2rem, 4vw, 3.1rem);
+  font-size: clamp(1.75rem, 6.5vw, 3.1rem);
   font-weight: 500;
 }
 
 .section-description {
-  font-size: 1rem;
+  font-size: clamp(0.92rem, 2.6vw, 1rem);
   color: var(--color-ink-soft);
-  line-height: 1.7;
+  line-height: 1.65;
   max-width: 58ch;
 }

@@ -1,24 +1,24 @@
 .hero {
-  padding-block: clamp(2.5rem, 6vw, 5rem) clamp(3.25rem, 6vw, 5rem);
+  padding-block: clamp(1.75rem, 5vw, 4.75rem) clamp(2.5rem, 6vw, 4.75rem);
   border-bottom: 1px solid var(--color-border);
 }
 
 .hero-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: clamp(2rem, 5vw, 3.75rem);
+  gap: clamp(1.75rem, 5vw, 3.75rem);
   align-items: center;
 }
 
 .hero-content {
   display: flex;
   flex-direction: column;
-  gap: 1.35rem;
+  gap: clamp(1rem, 3vw, 1.35rem);
 }
 
 .hero-title {
-  font-size: clamp(2.55rem, 5.4vw, 4.3rem);
-  line-height: 1.05;
+  font-size: clamp(2rem, 8.2vw, 4.3rem);
+  line-height: 1.06;
   letter-spacing: -0.02em;
 
   em {
@@ -28,23 +28,17 @@
 }
 
 .hero-lead {
-  font-size: 1.02rem;
+  font-size: clamp(0.95rem, 2.6vw, 1.02rem);
   color: var(--color-ink-soft);
   max-width: 52ch;
-}
-
-.hero-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.9rem;
 }
 
 .hero-stats {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1.25rem;
-  margin: 1rem 0 0;
-  padding-top: 1.4rem;
+  gap: clamp(0.65rem, 2.5vw, 1.25rem);
+  margin: 0.75rem 0 0;
+  padding-top: 1.25rem;
   border-top: 1px solid var(--color-border);
 }
 
@@ -55,16 +49,17 @@
   gap: 0.25rem;
 
   dt {
-    font-size: 0.72rem;
-    letter-spacing: 0.1em;
+    font-size: clamp(0.64rem, 1.8vw, 0.72rem);
+    letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--color-ink-muted);
+    line-height: 1.3;
   }
 
   dd {
     margin: 0;
     font-family: var(--font-display);
-    font-size: clamp(1.75rem, 3vw, 2.3rem);
+    font-size: clamp(1.55rem, 5.5vw, 2.3rem);
     font-weight: 600;
     line-height: 1;
   }
@@ -74,7 +69,7 @@
   margin: 0;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  padding: 0.85rem;
+  padding: clamp(0.5rem, 2vw, 0.85rem);
 }
 
 .hero-image-wrap {
@@ -93,34 +88,34 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
-  gap: 0.5rem;
-  padding: 0.8rem 0.25rem 0.15rem;
-  font-size: 0.76rem;
+  gap: 0.4rem 0.75rem;
+  padding: 0.7rem 0.2rem 0.15rem;
+  font-size: 0.75rem;
   color: var(--color-ink-muted);
 }
 
 .caption-code {
   font-weight: 600;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.11em;
   text-transform: uppercase;
   color: var(--color-accent);
 }
 
 .section {
-  padding-block: clamp(3.5rem, 6vw, 5.25rem);
+  padding-block: clamp(2.5rem, 6vw, 5rem);
 }
 
 .section-row {
-  margin-bottom: 2rem;
+  margin-bottom: clamp(1.35rem, 3.5vw, 2rem);
 }
 
 .catalog-toolbar {
   display: flex;
   flex-direction: column;
-  gap: 1.15rem;
-  padding: 1.4rem;
-  margin-bottom: 2rem;
-  background-color: var(--color-bg-alt);
+  gap: 1rem;
+  padding: clamp(0.95rem, 3vw, 1.4rem);
+  margin-bottom: clamp(1.5rem, 4vw, 2rem);
+  background: var(--color-bg-alt);
   border: 1px solid var(--color-border);
 }
 
@@ -132,58 +127,59 @@
 
 .search-input {
   width: 100%;
-  padding: 0.88rem 2.6rem 0.88rem 1rem;
+  min-height: 48px;
+  padding: 0.8rem 2.85rem 0.8rem 0.95rem;
   border: 1px solid var(--color-border-strong);
-  background-color: var(--color-surface);
+  border-radius: var(--radius-xs);
+  background: var(--color-surface);
   color: var(--color-ink);
-  font-size: 0.94rem;
-
-  &::placeholder {
-    color: var(--color-ink-muted);
-  }
+  font-size: 1rem;
+  appearance: none;
 }
 
 .clear-btn {
   position: absolute;
-  right: 0.65rem;
+  right: 0.2rem;
+  display: grid;
+  place-items: center;
+  min-width: 44px;
+  min-height: 44px;
   border: 0;
   background: transparent;
   color: var(--color-ink-muted);
   cursor: pointer;
-  padding: 0.35rem;
-  font-size: 0.85rem;
-
-  &:hover {
-    color: var(--color-ink);
-  }
 }
 
 .category-bar {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.55rem;
+  flex-wrap: nowrap;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
+  scrollbar-width: thin;
 }
 
 .filter-chip {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.52rem 0.95rem;
+  flex-shrink: 0;
+  gap: 0.45rem;
+  min-height: 42px;
+  padding: 0.5rem 0.9rem;
   border: 1px solid var(--color-border-strong);
-  background-color: var(--color-surface);
+  background: var(--color-surface);
   color: var(--color-ink-soft);
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   font-weight: 500;
   cursor: pointer;
+  scroll-snap-align: start;
+  touch-action: manipulation;
   transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 
-  &:hover {
-    border-color: var(--color-ink);
-    color: var(--color-ink);
-  }
-
   &.is-active {
-    background-color: var(--color-navy);
+    background: var(--color-navy);
     border-color: var(--color-navy);
     color: var(--color-navy-ink);
 
@@ -203,22 +199,22 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
-  padding-top: 0.35rem;
+  gap: 0.5rem 0.75rem;
+  padding-top: 0.4rem;
   border-top: 1px solid var(--color-border);
-}
-
-.results-summary {
-  font-size: 0.86rem;
+  font-size: 0.85rem;
   color: var(--color-ink-soft);
 }
 
 .reset-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
   border: 0;
   border-bottom: 1px solid var(--color-accent);
   background: transparent;
-  padding: 0.15rem 0;
-  font-size: 0.75rem;
+  padding: 0;
+  font-size: 0.74rem;
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -226,23 +222,18 @@
   cursor: pointer;
 }
 
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 1rem;
-  padding: 4rem 1.5rem;
-  background-color: var(--color-surface);
-  border: 1px solid var(--color-border);
-
-  h3 {
-    font-size: 1.85rem;
+@media (hover: hover) {
+  .filter-chip:not(.is-active):hover {
+    border-color: var(--color-ink);
+    color: var(--color-ink);
   }
+}
 
-  p {
-    max-width: 48ch;
-    color: var(--color-ink-soft);
+@media (min-width: 640px) {
+  .category-bar {
+    flex-wrap: wrap;
+    overflow-x: visible;
+    padding-bottom: 0;
   }
 }
 
