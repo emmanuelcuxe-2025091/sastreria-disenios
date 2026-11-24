@@ -21,8 +21,6 @@ export class HeaderComponent {
 
   protected readonly navItems: readonly NavItem[] = [
     { label: 'Inicio', path: '/', exact: true },
-    { label: 'Catálogo', path: '/catalogo', exact: false },
-    { label: 'Trayectoria', path: '/trayectoria', exact: false },
   ];
 
   protected toggleMenu(): void {

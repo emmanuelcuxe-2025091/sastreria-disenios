@@ -12,8 +12,8 @@
       </p>
 
       <div class="hero-actions">
-        <a class="btn btn-primary" routerLink="/catalogo">Explorar catálogo</a>
-        <a class="btn btn-outline" routerLink="/trayectoria">Conocer trayectoria</a>
+        <a class="btn btn-primary" href="#piezas">Explorar prendas</a>
+        <a class="btn btn-outline" href="#oficio">Conocer el oficio</a>
       </div>
 
       <dl class="hero-stats" aria-label="Cifras de trayectoria">
@@ -49,7 +49,7 @@
   </div>
 </section>
 
-<section class="section section-featured" aria-labelledby="featured-heading">
+<section id="piezas" class="section section-featured" aria-label="Piezas emblemáticas de nuestro archivo">
   <div class="container">
     <div class="section-row">
       <app-section-header
@@ -57,20 +57,17 @@
         title="Piezas emblemáticas de nuestro archivo"
         description="Una muestra representativa de los cortes, tejidos nobles y acabados manuales que distinguen el trabajo de la casa."
       />
-      <a class="btn btn-ghost" routerLink="/catalogo">
-        Ver las {{ catalog.totalGarments() }} piezas del catálogo →
-      </a>
     </div>
 
     <div class="garment-grid">
-      @for (garment of catalog.featuredGarments(); track garment.id; let first = $first) {
-        <app-garment-card [garment]="garment" [priority]="first" />
+      @for (garment of catalog.garments(); track garment.id; let idx = $index) {
+        <app-garment-card [garment]="garment" [priority]="idx < 3" />
       }
     </div>
   </div>
 </section>
 
-<section class="section section-categories" aria-labelledby="categories-heading">
+<section id="especialidades" class="section section-categories" aria-label="Especialidades del taller">
   <div class="container">
     <app-section-header
       eyebrow="Especialidades"
@@ -80,11 +77,7 @@
 
     <div class="category-grid">
       @for (category of catalog.categories; track category.id; let idx = $index) {
-        <a
-          class="category-card"
-          [routerLink]="['/catalogo']"
-          [queryParams]="{ categoria: category.id }"
-        >
+        <article class="category-card">
           <div class="category-top">
             <span class="category-index">0{{ idx + 1 }}</span>
             <span class="category-count">
@@ -94,14 +87,13 @@
           </div>
           <h3 class="category-title">{{ category.label }}</h3>
           <p class="category-desc">{{ category.description }}</p>
-          <span class="category-link">Explorar línea →</span>
-        </a>
+        </article>
       }
     </div>
   </div>
 </section>
 
-<section class="section section-craft" aria-labelledby="craft-heading">
+<section id="oficio" class="section section-craft" aria-label="El oficio de la sastrería">
   <div class="container">
     <app-section-header
       eyebrow="El Oficio"
@@ -124,7 +116,7 @@
   </div>
 </section>
 
-<section class="section-heritage-band" aria-label="Resumen de trayectoria">
+<section id="trayectoria" class="section-heritage-band" aria-label="Resumen de trayectoria">
   <div class="container heritage-band-inner">
     <div class="heritage-intro">
       <span class="eyebrow eyebrow-light">Trayectoria 1998 – 2026</span>
@@ -135,7 +127,6 @@
         Desde nuestro primer taller familiar hasta las colecciones contemporáneas de gala y
         sastrería femenina, cada etapa dejó piezas de referencia que hoy respaldan nuestra firma.
       </p>
-      <a class="btn btn-light" routerLink="/trayectoria">Recorrer nuestra historia</a>
     </div>
 
     <ol class="heritage-preview-list">

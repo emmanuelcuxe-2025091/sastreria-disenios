@@ -14,8 +14,7 @@ import { RouterLink } from '@angular/router';
           regresar al inicio o explorar nuestras prendas documentadas.
         </p>
         <div class="actions">
-          <a class="btn btn-primary" routerLink="/catalogo">Ver catálogo</a>
-          <a class="btn btn-outline" routerLink="/">Volver al inicio</a>
+          <a class="btn btn-primary" routerLink="/">Volver al inicio</a>
         </div>
       </div>
     </section>

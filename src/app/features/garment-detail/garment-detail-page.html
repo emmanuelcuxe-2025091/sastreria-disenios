@@ -4,11 +4,7 @@
       <nav class="breadcrumb" aria-label="Ruta de navegación">
         <a routerLink="/">Inicio</a>
         <span aria-hidden="true">/</span>
-        <a routerLink="/catalogo">Catálogo</a>
-        <span aria-hidden="true">/</span>
-        <a [routerLink]="['/catalogo']" [queryParams]="{ categoria: item.category }">
-          {{ categoryLabel() }}
-        </a>
+        <span>{{ categoryLabel() }}</span>
         <span aria-hidden="true">/</span>
         <span aria-current="page">{{ item.code }}</span>
       </nav>
@@ -106,7 +102,7 @@
             </div>
             <div class="inquiry-actions">
               <a class="btn btn-primary" [href]="mailtoInquiryUrl()">Solicitar cita de referencia</a>
-              <a class="btn btn-outline" routerLink="/catalogo">Volver al catálogo</a>
+              <a class="btn btn-outline" routerLink="/">Volver al inicio</a>
             </div>
           </div>
         </section>
@@ -139,7 +135,7 @@
         Es posible que el enlace haya cambiado o que la referencia consultada no exista en el
         catálogo actual.
       </p>
-      <a class="btn btn-primary" routerLink="/catalogo">Explorar el catálogo completo</a>
+      <a class="btn btn-primary" routerLink="/">Volver al inicio</a>
     </div>
   </section>
 }
