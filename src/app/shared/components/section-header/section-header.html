@@ -1,0 +1,11 @@
+<div class="section-header" [class.is-centered]="align() === 'center'">
+  <span class="eyebrow">{{ eyebrow() }}</span>
+  @if (headingLevel() === 'h1') {
+    <h1 class="section-title">{{ title() }}</h1>
+  } @else {
+    <h2 class="section-title">{{ title() }}</h2>
+  }
+  @if (description()) {
+    <p class="section-description">{{ description() }}</p>
+  }
+</div>

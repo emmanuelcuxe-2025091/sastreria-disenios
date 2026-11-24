@@ -1,0 +1,147 @@
+<section class="hero">
+  <div class="container hero-grid">
+    <div class="hero-content">
+      <span class="eyebrow">Archivo de Confección · Desde {{ env.company.foundedYear }}</span>
+      <h1 class="hero-title">
+        Prendas que narran <em>{{ yearsInBusiness }} años</em> de sastrería y oficio.
+      </h1>
+      <p class="hero-lead">
+        Este catálogo reúne una selección curada de los trajes, piezas de gala, abrigos y camisería
+        que nuestra firma ha confeccionado a lo largo de su trayectoria para clientes particulares y
+        organizaciones exigentes.
+      </p>
+
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#piezas">Explorar prendas</a>
+      </div>
+
+      <dl class="hero-stats" aria-label="Cifras de trayectoria">
+        <div class="stat-item">
+          <dt>Años de oficio</dt>
+          <dd>+{{ yearsInBusiness }}</dd>
+        </div>
+        <div class="stat-item">
+          <dt>Prendas a medida</dt>
+          <dd>+1,400</dd>
+        </div>
+        <div class="stat-item">
+          <dt>Confección artesanal</dt>
+          <dd>100%</dd>
+        </div>
+      </dl>
+    </div>
+
+    <figure class="hero-visual">
+      <div class="hero-image-wrap">
+        <img
+          src="images/catalog/hero-atelier.jpg"
+          alt="Taller artesanal de Sastrería y Diseños con saco de lana sobre maniquí, telas italianas y tijeras de corte"
+          loading="eager"
+          fetchpriority="high"
+        />
+      </div>
+      <figcaption class="hero-caption">
+        <span class="caption-code">Taller Central · Patronaje Propio</span>
+        <span class="caption-note">Corte individual a tiza, lana merino y entretela flotante.</span>
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<section id="piezas" class="section section-featured" aria-label="Catálogo de prendas">
+  <div class="container">
+    <div class="section-row">
+      <app-section-header
+        eyebrow="Catálogo de Prendas"
+        title="Piezas emblemáticas de nuestro archivo"
+        description="Explore nuestras confecciones filtrando por tipo de ropa o buscando por nombre, tejido, colección o año."
+      />
+    </div>
+
+    <div class="catalog-toolbar" aria-label="Búsqueda y filtros por tipo de ropa">
+      <div class="search-field">
+        <label class="sr-only" for="garment-search">Buscar prendas</label>
+        <input
+          id="garment-search"
+          type="search"
+          class="search-input"
+          placeholder="Buscar por nombre, tejido (lana, cachemira, lino...), código o año..."
+          [value]="catalog.filter().search"
+          (input)="onSearchInput($event)"
+        />
+        @if (catalog.filter().search) {
+          <button
+            type="button"
+            class="clear-btn"
+            aria-label="Limpiar búsqueda"
+            (click)="clearSearch()"
+          >
+            ✕
+          </button>
+        }
+      </div>
+
+      <div class="category-bar" role="group" aria-label="Filtrar por tipo de ropa">
+        <button
+          type="button"
+          class="filter-chip"
+          [class.is-active]="isAllSelected()"
+          [attr.aria-pressed]="isAllSelected()"
+          (click)="selectAllCategories()"
+        >
+          Todas
+          <span class="chip-count">{{ catalog.totalGarments() }}</span>
+        </button>
+
+        @for (category of catalog.categories; track category.id) {
+          <button
+            type="button"
+            class="filter-chip"
+            [class.is-active]="isCategorySelected(category.id)"
+            [attr.aria-pressed]="isCategorySelected(category.id)"
+            (click)="toggleCategory(category.id)"
+          >
+            {{ category.label }}
+            <span class="chip-count">{{ catalog.categoryCounts().get(category.id) ?? 0 }}</span>
+          </button>
+        }
+      </div>
+
+      <div class="results-bar" aria-live="polite">
+        <p class="results-summary">
+          Mostrando <strong>{{ catalog.filteredGarments().length }}</strong>
+          {{ catalog.filteredGarments().length === 1 ? 'prenda' : 'prendas' }}
+          @if (catalog.activeFilterCount() > 0) {
+            <span>con filtros activos</span>
+          }
+        </p>
+
+        @if (catalog.activeFilterCount() > 0) {
+          <button type="button" class="reset-link" (click)="resetFilters()">
+            Restablecer filtros
+          </button>
+        }
+      </div>
+    </div>
+
+    @if (catalog.filteredGarments().length > 0) {
+      <div class="garment-grid">
+        @for (garment of catalog.filteredGarments(); track garment.id; let idx = $index) {
+          <app-garment-card [garment]="garment" [priority]="idx < 3" />
+        }
+      </div>
+    } @else {
+      <div class="empty-state">
+        <span class="eyebrow">Sin coincidencias</span>
+        <h3>No encontramos prendas con los criterios seleccionados</h3>
+        <p>
+          Pruebe con otro término de búsqueda o restablezca los filtros para ver todas las prendas
+          del catálogo.
+        </p>
+        <button type="button" class="btn btn-primary" (click)="resetFilters()">
+          Ver todas las prendas
+        </button>
+      </div>
+    }
+  </div>
+</section>

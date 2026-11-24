@@ -1,0 +1,56 @@
+<footer class="site-footer">
+  <div class="container footer-grid">
+    <div class="footer-brand">
+      <div class="footer-mark">
+        <span class="monogram" aria-hidden="true">SD</span>
+        <div>
+          <p class="name">{{ env.company.name }}</p>
+          <p class="tagline">{{ env.company.tagline }}</p>
+        </div>
+      </div>
+      <p class="manifesto">
+        Archivo institucional de prendas confeccionadas a medida. Cada pieza documentada refleja
+        nuestro compromiso con el patronaje individual, los tejidos nobles y el oficio artesanal
+        desde {{ env.company.foundedYear }}.
+      </p>
+    </div>
+
+    <div class="footer-col">
+      <h3 class="col-title">Secciones</h3>
+      <ul class="col-list">
+        <li><a routerLink="/">Inicio</a></li>
+        <li><a href="#piezas">Catálogo de prendas</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-col">
+      <h3 class="col-title">Tipos de Prenda</h3>
+      <ul class="col-list">
+        @for (category of catalog.categories; track category.id) {
+          <li>{{ category.label }}</li>
+        }
+      </ul>
+    </div>
+
+    <div class="footer-col">
+      <h3 class="col-title">Atención a Futuros Clientes</h3>
+      <ul class="col-list contact-list">
+        <li>{{ env.company.city }}</li>
+        <li>{{ env.company.schedule }}</li>
+        <li>
+          <a [href]="'mailto:' + env.company.email">{{ env.company.email }}</a>
+        </li>
+        <li>
+          <a [href]="'tel:' + env.company.phoneDisplay">{{ env.company.phoneDisplay }}</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <div class="container bottom-inner">
+      <p>© {{ currentYear }} {{ env.company.name }}. Todos los derechos reservados.</p>
+      <p class="catalog-note">Catálogo de exhibición corporativa · Confección bajo medida</p>
+    </div>
+  </div>
+</footer>

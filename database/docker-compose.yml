@@ -1,0 +1,39 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: sastreria-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-sastreria_catalog}
+      POSTGRES_USER: ${POSTGRES_USER:-sastreria_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-sastreria_dev_secret}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./postgrest_roles.sql:/docker-entrypoint-initdb.d/02-postgrest_roles.sql:ro
+      - ./seed.sql:/docker-entrypoint-initdb.d/03-seed.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-sastreria_admin} -d ${POSTGRES_DB:-sastreria_catalog}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  postgrest:
+    image: postgrest/postgrest:v12.2.3
+    container_name: sastreria-postgrest
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PGRST_DB_URI: postgres://authenticator:change_me_in_production@postgres:5432/${POSTGRES_DB:-sastreria_catalog}
+      PGRST_DB_SCHEMAS: api
+      PGRST_DB_ANON_ROLE: web_anon
+      PGRST_OPENAPI_SERVER_PROXY_URI: http://localhost:${POSTGREST_PORT:-3000}
+    ports:
+      - "${POSTGREST_PORT:-3000}:3000"
+
+volumes:
+  postgres_data:

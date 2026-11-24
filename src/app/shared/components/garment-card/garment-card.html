@@ -1,0 +1,29 @@
+<article class="garment-card">
+  <a class="card-link" [routerLink]="['/prenda', garment().slug]">
+    <div class="media-frame">
+      @if (primaryImage(); as img) {
+        <img
+          [src]="img.url"
+          [alt]="img.alt"
+          [attr.loading]="priority() ? 'eager' : 'lazy'"
+          decoding="async"
+          class="card-image"
+        />
+      }
+      <div class="media-meta">
+        <span class="badge-year">{{ garment().year }}</span>
+        <span class="badge-code">{{ garment().code }}</span>
+      </div>
+    </div>
+
+    <div class="card-body">
+      <p class="card-category">{{ categoryLabel() }} · {{ garment().collection }}</p>
+      <h3 class="card-title">{{ garment().name }}</h3>
+      <p class="card-subtitle">{{ garment().subtitle }}</p>
+      <div class="card-footer">
+        <span class="card-fabric">{{ garment().specs.fabric }}</span>
+        <span class="card-cta" aria-hidden="true">Ver ficha →</span>
+      </div>
+    </div>
+  </a>
+</article>

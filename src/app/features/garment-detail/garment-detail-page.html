@@ -1,0 +1,131 @@
+@if (garment(); as item) {
+  <article class="detail-page">
+    <div class="container">
+      <nav class="breadcrumb" aria-label="Ruta de navegación">
+        <a routerLink="/">Inicio</a>
+        <span aria-hidden="true">/</span>
+        <span>{{ categoryLabel() }}</span>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">{{ item.code }}</span>
+      </nav>
+
+      <div class="detail-grid">
+        <section class="gallery" aria-label="Fotografías de la prenda">
+          @if (activeImage(); as img) {
+            <figure class="main-figure">
+              <div class="main-image-frame">
+                <img [src]="img.url" [alt]="img.alt" loading="eager" />
+              </div>
+              @if (img.caption) {
+                <figcaption class="figure-caption">{{ img.caption }}</figcaption>
+              }
+            </figure>
+          }
+
+          @if (item.images.length > 1) {
+            <div class="thumbs" role="group" aria-label="Vistas disponibles">
+              @for (img of item.images; track img.url; let i = $index) {
+                <button
+                  type="button"
+                  class="thumb-btn"
+                  [class.is-selected]="selectedImageIndex() === i"
+                  [attr.aria-label]="'Ver fotografía ' + (i + 1)"
+                  (click)="selectImage(i)"
+                >
+                  <img [src]="img.url" [alt]="img.alt" />
+                </button>
+              }
+            </div>
+          }
+        </section>
+
+        <section class="dossier">
+          <div class="dossier-meta">
+            <span class="meta-code">{{ item.code }}</span>
+            <span class="meta-dot" aria-hidden="true">·</span>
+            <span>{{ item.year }}</span>
+            <span class="meta-dot" aria-hidden="true">·</span>
+            <span>{{ item.collection }}</span>
+          </div>
+
+          <h1 class="dossier-title">{{ item.name }}</h1>
+          <p class="dossier-subtitle">{{ item.subtitle }}</p>
+          <p class="dossier-summary">{{ item.summary }}</p>
+
+          <div class="story-box">
+            <h2>Historia en el Taller</h2>
+            <p>{{ item.story }}</p>
+          </div>
+
+          <div class="specs-section">
+            <h2>Ficha de Confección</h2>
+            <dl class="specs-list">
+              <div class="spec-row">
+                <dt>Tejido principal</dt>
+                <dd>{{ item.specs.fabric }}</dd>
+              </div>
+              <div class="spec-row">
+                <dt>Forro y acabados</dt>
+                <dd>{{ item.specs.lining }}</dd>
+              </div>
+              <div class="spec-row">
+                <dt>Estructura interna</dt>
+                <dd>{{ item.specs.construction }}</dd>
+              </div>
+              <div class="spec-row">
+                <dt>Dedicación artesanal</dt>
+                <dd>{{ item.specs.craftingHours }} horas · {{ item.specs.fittings }} pruebas de ajuste</dd>
+              </div>
+              <div class="spec-row">
+                <dt>Ocasión recomendada</dt>
+                <dd>{{ item.specs.occasion }}</dd>
+              </div>
+            </dl>
+          </div>
+
+          <div class="techniques-section">
+            <h2>Técnicas Empleadas</h2>
+            <ul class="techniques-list">
+              @for (technique of item.techniques; track technique) {
+                <li>{{ technique }}</li>
+              }
+            </ul>
+          </div>
+
+          <div class="dossier-actions">
+            <a class="btn btn-outline" routerLink="/">Volver al inicio</a>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    @if (relatedGarments().length > 0) {
+      <section class="related-section" aria-labelledby="related-heading">
+        <div class="container">
+          <div class="related-header">
+            <span class="eyebrow">Continuar Explorando</span>
+            <h2 id="related-heading">Otras prendas de nuestra trayectoria</h2>
+          </div>
+
+          <div class="related-grid">
+            @for (related of relatedGarments(); track related.id) {
+              <app-garment-card [garment]="related" />
+            }
+          </div>
+        </div>
+      </section>
+    }
+  </article>
+} @else {
+  <section class="not-found-garment">
+    <div class="container not-found-inner">
+      <span class="eyebrow">Referencia no encontrada</span>
+      <h1>Esta prenda no figura en el archivo público</h1>
+      <p>
+        Es posible que el enlace haya cambiado o que la referencia consultada no exista en el
+        catálogo actual.
+      </p>
+      <a class="btn btn-primary" routerLink="/">Volver al inicio</a>
+    </div>
+  </section>
+}
