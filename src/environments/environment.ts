@@ -5,10 +5,10 @@ export const environment: AppEnvironment = {
   dataSource: 'local',
   postgrestBaseUrl: 'http://localhost:3000',
   company: {
-    name: 'Sastrería & Diseños',
+    name: 'Expert',
     tagline: 'Alta Confección y Sastrería de Trayectoria',
     foundedYear: 1998,
-    email: 'atelier@sastreriadisenios.com',
+    email: 'contacto@expert.com',
     phoneDisplay: '+502 2345-6789',
     whatsappNumber: '50223456789',
     city: 'Ciudad de Guatemala · Taller Central',

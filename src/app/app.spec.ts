@@ -28,6 +28,6 @@ describe('App', () => {
     expect(element.querySelector('header')).toBeTruthy();
     expect(element.querySelector('main#main-content')).toBeTruthy();
     expect(element.querySelector('footer')).toBeNull();
-    expect(element.querySelector('.brand-name')?.textContent).toContain('Sastrería & Diseños');
+    expect(element.querySelector('.brand-name')?.textContent).toContain('Expert');
   });
 });

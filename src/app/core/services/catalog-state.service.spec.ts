@@ -7,6 +7,7 @@ describe('CatalogStateService', () => {
   let service: CatalogStateService;
 
   beforeEach(async () => {
+    localStorage.clear();
     TestBed.configureTestingModule({
       providers: [
         CatalogStateService,
@@ -15,6 +16,10 @@ describe('CatalogStateService', () => {
     });
     service = TestBed.inject(CatalogStateService);
     await service.ensureLoaded();
+  });
+
+  afterEach(() => {
+    localStorage.clear();
   });
 
   it('loads reference options and created garments in separate sections', () => {
@@ -96,5 +101,22 @@ describe('CatalogStateService', () => {
     expect(related.length).toBe(3);
     expect(related.every((item) => item.section === garment!.section)).toBe(true);
     expect(related.some((item) => item.slug === garment!.slug)).toBe(false);
+  });
+
+  it('adds new garments to opciones and creadas with formatted month and year', () => {
+    const added = service.addGarment({
+      section: 'opciones',
+      category: 'sastreria-femenina',
+      title: 'Blazer Referencia Expert',
+      description: 'Blazer entallado de referencia en lana fría azul marino.',
+      month: 5,
+      year: 2026,
+      imageDataUrl: 'data:image/png;base64,iVBORw0KGgo=',
+    });
+
+    expect(added.section).toBe('opciones');
+    expect(added.createdDateLabel).toBe('Mayo 2026');
+    expect(service.sectionCounts().opciones).toBe(7);
+    expect(service.getGarmentBySlug(added.slug)?.name).toBe('Blazer Referencia Expert');
   });
 });

@@ -8,6 +8,14 @@ export const routes: Routes = [
       import('./features/home/home-page').then((m) => m.HomePageComponent),
   },
   {
+    path: 'agregar',
+    title: 'Agregar Prenda',
+    loadComponent: () =>
+      import('./features/add-garment/add-garment-page').then(
+        (m) => m.AddGarmentPageComponent,
+      ),
+  },
+  {
     path: 'prenda/:slug',
     title: 'Ficha de Prenda',
     loadComponent: () =>

@@ -1,6 +1,6 @@
-# Sastrería & Diseños — Catálogo de Prendas y Trayectoria
+# Expert — Catálogo de Prendas
 
-Aplicación web editorial desarrollada con **Angular 22**, **TypeScript estricto** y arquitectura desacoplada preparada para **PostgreSQL + PostgREST**. Está diseñada exclusivamente como catálogo de exhibición corporativa para mostrar a futuros clientes las prendas confeccionadas por la empresa a lo largo de su trayectoria (1998–2026).
+Aplicación web editorial desarrollada con **Angular 22**, **TypeScript estricto** y arquitectura desacoplada preparada para **PostgreSQL + PostgREST**. Está diseñada como catálogo de exhibición para mostrar opciones de prendas y prendas creadas por la empresa **Expert**, incluyendo un apartado para registrar nuevas opciones de prendas y prendas creadas.
 
 ---
 
@@ -59,6 +59,7 @@ sastreria-disenios/
         ├── shared/components/        # Header, GarmentCard y SectionHeader
         └── features/
             ├── home/                 # Secciones "Opciones de prendas" y "Prendas creadas" con búsqueda y filtros múltiples
+            ├── add-garment/          # Apartado para agregar opciones de prendas y prendas creadas (/agregar)
             ├── garment-detail/       # Ficha técnica completa y galería por prenda (/prenda/:slug)
             └── not-found/            # Página 404
 ```

@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { GarmentCategory, GarmentSection } from '../../core/models/catalog.models';
 import { CatalogStateService } from '../../core/services/catalog-state.service';
 import { GarmentCardComponent } from '../../shared/components/garment-card/garment-card';
@@ -6,7 +7,7 @@ import { SectionHeaderComponent } from '../../shared/components/section-header/s
 
 @Component({
   selector: 'app-home-page',
-  imports: [GarmentCardComponent, SectionHeaderComponent],
+  imports: [RouterLink, GarmentCardComponent, SectionHeaderComponent],
   templateUrl: './home-page.html',
   styleUrl: './home-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -23,7 +23,7 @@ describe('PostgrestCatalogRepository', () => {
             dataSource: 'postgrest',
             postgrestBaseUrl: 'http://localhost:3000',
             company: {
-              name: 'Sastrería & Diseños',
+              name: 'Expert',
               tagline: 'Test',
               foundedYear: 1998,
               email: 'test@example.com',

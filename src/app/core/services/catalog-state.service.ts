@@ -6,11 +6,29 @@ import {
   CatalogFilter,
   CatalogSortOption,
   CompanyMilestone,
+  CreateGarmentInput,
   Garment,
   GarmentCategory,
   GarmentEra,
   GarmentSection,
 } from '../models/catalog.models';
+
+const STORAGE_KEY = 'expert_custom_garments_v1';
+
+const SPANISH_MONTHS: readonly string[] = [
+  'Enero',
+  'Febrero',
+  'Marzo',
+  'Abril',
+  'Mayo',
+  'Junio',
+  'Julio',
+  'Agosto',
+  'Septiembre',
+  'Octubre',
+  'Noviembre',
+  'Diciembre',
+];
 
 const DEFAULT_FILTER: CatalogFilter = {
   section: 'opciones',
@@ -28,6 +46,25 @@ function normalizeText(value: string): string {
     .trim();
 }
 
+function slugify(value: string): string {
+  const base = normalizeText(value)
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  return base || 'prenda';
+}
+
+function resolveEra(year: number): GarmentEra {
+  if (year <= 2005) return '1998-2005';
+  if (year <= 2015) return '2006-2015';
+  if (year <= 2021) return '2016-2021';
+  return '2022-2026';
+}
+
+function formatMonthYear(month: number, year: number): string {
+  const monthName = SPANISH_MONTHS[month - 1] ?? '';
+  return monthName ? `${monthName} ${year}` : String(year);
+}
+
 @Injectable({ providedIn: 'root' })
 export class CatalogStateService {
   private readonly repository = inject(CATALOG_REPOSITORY);
@@ -35,6 +72,7 @@ export class CatalogStateService {
   readonly categories = CATALOG_CATEGORIES;
   readonly eras = CATALOG_ERAS;
   readonly pillars = CRAFTSMANSHIP_PILLARS;
+  readonly months = SPANISH_MONTHS;
 
   private readonly _garments = signal<readonly Garment[]>([]);
   private readonly _milestones = signal<readonly CompanyMilestone[]>([]);
@@ -93,6 +131,7 @@ export class CatalogStateService {
           garment.code,
           garment.collection,
           garment.summary,
+          garment.createdDateLabel ?? '',
           garment.specs.fabric,
           garment.specs.occasion,
           String(garment.year),
@@ -148,12 +187,70 @@ export class CatalogStateService {
         firstValueFrom(this.repository.getGarments()),
         firstValueFrom(this.repository.getMilestones()),
       ]);
-      this._garments.set(garments);
+      const storedCustom = this.readCustomGarments();
+      const existingIds = new Set(garments.map((item) => item.id));
+      const uniqueCustom = storedCustom.filter((item) => !existingIds.has(item.id));
+      this._garments.set([...uniqueCustom, ...garments]);
       this._milestones.set(milestones);
       this._loaded.set(true);
     } finally {
       this._loading.set(false);
     }
+  }
+
+  addGarment(input: CreateGarmentInput): Garment {
+    const title = input.title.trim();
+    const description = input.description.trim();
+    const timestamp = Date.now();
+    const sequence = String(this._garments().length + 1).padStart(2, '0');
+    const prefix = input.section === 'opciones' ? 'OP' : 'EX';
+    const createdDateLabel = formatMonthYear(input.month, input.year);
+    const isOption = input.section === 'opciones';
+
+    const garment: Garment = {
+      id: `custom-${input.section}-${timestamp}`,
+      code: `${prefix}-${input.year}-${sequence}`,
+      slug: `${slugify(title)}-${timestamp.toString(36)}`,
+      section: input.section,
+      name: title,
+      subtitle: description,
+      category: input.category,
+      collection: isOption ? 'Opciones de Referencia' : 'Prendas Creadas',
+      year: input.year,
+      createdDateLabel,
+      era: resolveEra(input.year),
+      featured: false,
+      summary: description,
+      story: isOption
+        ? `Opción de prenda registrada en el catálogo de Expert (${createdDateLabel}).`
+        : `Prenda confeccionada a medida por Expert en ${createdDateLabel}.`,
+      techniques: ['Confección a medida Expert', 'Patronaje personalizado'],
+      specs: {
+        fabric: 'Tejido seleccionado a medida',
+        lining: 'Forro transpirable de alta calidad',
+        construction: 'Confección artesanal personalizada',
+        craftingHours: 40,
+        fittings: 3,
+        occasion: isOption ? 'Personalizable según ocasión' : 'Elaboración exclusiva a medida',
+      },
+      images: [
+        {
+          url: input.imageDataUrl,
+          alt: title,
+          caption: `${title} — ${createdDateLabel}`,
+          isPrimary: true,
+        },
+      ],
+    };
+
+    this._garments.update((current) => [garment, ...current]);
+    this.saveCustomGarment(garment);
+    this._filter.set({
+      ...DEFAULT_FILTER,
+      section: input.section,
+    });
+
+    return garment;
   }
 
   getGarmentBySlug(slug: string): Garment | null {
@@ -216,5 +313,27 @@ export class CatalogStateService {
       ...DEFAULT_FILTER,
       section: current.section,
     }));
+  }
+
+  private readCustomGarments(): readonly Garment[] {
+    try {
+      if (typeof localStorage === 'undefined') return [];
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? (parsed as Garment[]) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  private saveCustomGarment(garment: Garment): void {
+    try {
+      if (typeof localStorage === 'undefined') return;
+      const existing = this.readCustomGarments();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify([garment, ...existing]));
+    } catch {
+      // Ignore storage quota / privacy mode errors cleanly while keeping in-memory state
+    }
   }
 }
