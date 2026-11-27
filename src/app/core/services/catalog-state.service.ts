@@ -5,6 +5,7 @@ import { CATALOG_CATEGORIES, CATALOG_ERAS, CRAFTSMANSHIP_PILLARS } from '../data
 import {
   CatalogFilter,
   CatalogSortOption,
+  CategoryMeta,
   CompanyMilestone,
   CreateGarmentInput,
   Garment,
@@ -14,6 +15,20 @@ import {
 } from '../models/catalog.models';
 
 const STORAGE_KEY = 'expert_custom_garments_v1';
+const CUSTOM_CATEGORIES_KEY = 'expert_custom_categories_v1';
+const CUSTOM_SUBTITLES_KEY = 'expert_custom_subtitles_v1';
+
+const DEFAULT_SPEC_SUBTITLES: readonly string[] = [
+  'Tejido principal',
+  'Forro y acabados',
+  'Estructura interna',
+  'Dedicación artesanal',
+  'Ocasión recomendada',
+  'Color y tono',
+  'Corte y silueta',
+  'Botones y detalles',
+  'Cuidados de la prenda',
+];
 
 const SPANISH_MONTHS: readonly string[] = [
   'Enero',
@@ -69,17 +84,20 @@ function formatMonthYear(month: number, year: number): string {
 export class CatalogStateService {
   private readonly repository = inject(CATALOG_REPOSITORY);
 
-  readonly categories = CATALOG_CATEGORIES;
   readonly eras = CATALOG_ERAS;
   readonly pillars = CRAFTSMANSHIP_PILLARS;
   readonly months = SPANISH_MONTHS;
 
+  private readonly _categories = signal<readonly CategoryMeta[]>(this.loadInitialCategories());
+  private readonly _specSubtitles = signal<readonly string[]>(this.loadInitialSubtitles());
   private readonly _garments = signal<readonly Garment[]>([]);
   private readonly _milestones = signal<readonly CompanyMilestone[]>([]);
   private readonly _loading = signal<boolean>(false);
   private readonly _loaded = signal<boolean>(false);
   private readonly _filter = signal<CatalogFilter>(DEFAULT_FILTER);
 
+  readonly categories = this._categories.asReadonly();
+  readonly specSubtitles = this._specSubtitles.asReadonly();
   readonly garments = this._garments.asReadonly();
   readonly milestones = this._milestones.asReadonly();
   readonly loading = this._loading.asReadonly();
@@ -165,7 +183,7 @@ export class CatalogStateService {
 
   readonly categoryCounts = computed(() => {
     const counts = new Map<GarmentCategory, number>();
-    for (const category of this.categories) {
+    for (const category of this._categories()) {
       counts.set(category.id, 0);
     }
     for (const garment of this.sectionGarments()) {
@@ -187,7 +205,7 @@ export class CatalogStateService {
         firstValueFrom(this.repository.getGarments()),
         firstValueFrom(this.repository.getMilestones()),
       ]);
-      const storedCustom = this.readCustomGarments();
+      const storedCustom = this.readStorageArray<Garment>(STORAGE_KEY);
       const existingIds = new Set(garments.map((item) => item.id));
       const uniqueCustom = storedCustom.filter((item) => !existingIds.has(item.id));
       this._garments.set([...uniqueCustom, ...garments]);
@@ -196,6 +214,47 @@ export class CatalogStateService {
     } finally {
       this._loading.set(false);
     }
+  }
+
+  addCategory(rawLabel: string): CategoryMeta | null {
+    const label = rawLabel.trim();
+    if (!label) return null;
+
+    const normalized = normalizeText(label);
+    const existing = this._categories().find(
+      (cat) => normalizeText(cat.label) === normalized || cat.id === slugify(label),
+    );
+    if (existing) {
+      return existing;
+    }
+
+    const created: CategoryMeta = {
+      id: slugify(label),
+      label,
+      shortLabel: label,
+      description: `Prendas de la categoría ${label}.`,
+    };
+
+    this._categories.update((current) => [...current, created]);
+    const stored = this.readStorageArray<CategoryMeta>(CUSTOM_CATEGORIES_KEY);
+    this.writeStorageArray(CUSTOM_CATEGORIES_KEY, [...stored, created]);
+    return created;
+  }
+
+  addSpecSubtitle(rawSubtitle: string): string | null {
+    const subtitle = rawSubtitle.trim();
+    if (!subtitle) return null;
+
+    const normalized = normalizeText(subtitle);
+    const existing = this._specSubtitles().find((item) => normalizeText(item) === normalized);
+    if (existing) {
+      return existing;
+    }
+
+    this._specSubtitles.update((current) => [...current, subtitle]);
+    const stored = this.readStorageArray<string>(CUSTOM_SUBTITLES_KEY);
+    this.writeStorageArray(CUSTOM_SUBTITLES_KEY, [...stored, subtitle]);
+    return subtitle;
   }
 
   addGarment(input: CreateGarmentInput): Garment {
@@ -250,7 +309,8 @@ export class CatalogStateService {
     };
 
     this._garments.update((current) => [garment, ...current]);
-    this.saveCustomGarment(garment);
+    const existing = this.readStorageArray<Garment>(STORAGE_KEY);
+    this.writeStorageArray(STORAGE_KEY, [garment, ...existing]);
     this._filter.set({
       ...DEFAULT_FILTER,
       section: input.section,
@@ -273,7 +333,7 @@ export class CatalogStateService {
   }
 
   getCategoryLabel(categoryId: GarmentCategory): string {
-    return this.categories.find((cat) => cat.id === categoryId)?.label ?? categoryId;
+    return this._categories().find((cat) => cat.id === categoryId)?.label ?? categoryId;
   }
 
   setSection(section: GarmentSection): void {
@@ -321,25 +381,37 @@ export class CatalogStateService {
     }));
   }
 
-  private readCustomGarments(): readonly Garment[] {
+  private loadInitialCategories(): readonly CategoryMeta[] {
+    const custom = this.readStorageArray<CategoryMeta>(CUSTOM_CATEGORIES_KEY);
+    const ids = new Set(CATALOG_CATEGORIES.map((c) => c.id));
+    return [...CATALOG_CATEGORIES, ...custom.filter((c) => c?.id && c?.label && !ids.has(c.id))];
+  }
+
+  private loadInitialSubtitles(): readonly string[] {
+    const custom = this.readStorageArray<string>(CUSTOM_SUBTITLES_KEY);
+    const seen = new Set(DEFAULT_SPEC_SUBTITLES.map(normalizeText));
+    const extras = custom.filter((s) => typeof s === 'string' && s.trim() && !seen.has(normalizeText(s)));
+    return [...DEFAULT_SPEC_SUBTITLES, ...extras];
+  }
+
+  private readStorageArray<T>(key: string): readonly T[] {
     try {
       if (typeof localStorage === 'undefined') return [];
-      const raw = localStorage.getItem(STORAGE_KEY);
+      const raw = localStorage.getItem(key);
       if (!raw) return [];
       const parsed = JSON.parse(raw);
-      return Array.isArray(parsed) ? (parsed as Garment[]) : [];
+      return Array.isArray(parsed) ? (parsed as T[]) : [];
     } catch {
       return [];
     }
   }
 
-  private saveCustomGarment(garment: Garment): void {
+  private writeStorageArray<T>(key: string, items: readonly T[]): void {
     try {
       if (typeof localStorage === 'undefined') return;
-      const existing = this.readCustomGarments();
-      localStorage.setItem(STORAGE_KEY, JSON.stringify([garment, ...existing]));
+      localStorage.setItem(key, JSON.stringify(items));
     } catch {
-      // Ignore storage quota / privacy mode errors cleanly while keeping in-memory state
+      // Ignore quota / privacy mode errors while preserving in-memory state
     }
   }
 }

@@ -1,12 +1,14 @@
 export type GarmentSection = 'opciones' | 'creadas';
 
-export type GarmentCategory =
+export type BuiltInGarmentCategory =
   | 'trajes-a-medida'
   | 'gala-y-etiqueta'
   | 'sastreria-femenina'
   | 'abrigos-y-capas'
   | 'camiseria-artesanal'
   | 'vestuario-corporativo';
+
+export type GarmentCategory = BuiltInGarmentCategory | (string & {});
 
 export type GarmentEra = '1998-2005' | '2006-2015' | '2016-2021' | '2022-2026';
 

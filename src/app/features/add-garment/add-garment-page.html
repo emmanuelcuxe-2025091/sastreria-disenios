@@ -54,25 +54,28 @@
           />
 
           @if (uploadedImages().length > 0) {
+            <p class="upload-hint">
+              Toque <strong>Elegir principal</strong> en la fotografía que desea mostrar como portada.
+            </p>
             <div class="preview-grid">
               @for (img of uploadedImages(); track i; let i = $index) {
-                <div class="preview-card">
+                <div class="preview-card" [class.is-primary]="primaryImageIndex() === i">
                   <div class="preview-media">
                     <img [src]="img.dataUrl" [alt]="'Vista previa ' + (i + 1)" />
-                    @if (i === 0) {
-                      <span class="primary-badge">Principal</span>
+                    @if (primaryImageIndex() === i) {
+                      <span class="primary-badge">★ Principal</span>
                     }
                   </div>
                   <div class="preview-card-actions">
-                    @if (i > 0) {
-                      <button
-                        type="button"
-                        class="mini-link"
-                        (click)="setPrimaryImage(i)"
-                      >
-                        Principal
-                      </button>
-                    }
+                    <button
+                      type="button"
+                      class="mini-link"
+                      [class.is-selected]="primaryImageIndex() === i"
+                      [attr.aria-pressed]="primaryImageIndex() === i"
+                      (click)="setPrimaryImage(i)"
+                    >
+                      {{ primaryImageIndex() === i ? '★ Principal' : 'Elegir principal' }}
+                    </button>
                     <button type="button" class="remove-link" (click)="removeImage(i)">
                       Quitar
                     </button>
@@ -132,11 +135,49 @@
           <label class="field-label" for="garment-category">
             Tipo de prenda <span class="required-mark" aria-hidden="true">*</span>
           </label>
-          <select id="garment-category" class="field-input" formControlName="category">
-            @for (category of catalog.categories; track category.id) {
-              <option [value]="category.id">{{ category.label }}</option>
-            }
-          </select>
+          <div class="input-with-action">
+            <select id="garment-category" class="field-input" formControlName="category">
+              @for (category of catalog.categories(); track category.id) {
+                <option [value]="category.id">{{ category.label }}</option>
+              }
+            </select>
+            <button
+              type="button"
+              class="icon-plus-btn"
+              [attr.aria-expanded]="addingCategory()"
+              aria-label="Agregar nuevo tipo de prenda"
+              title="Agregar nuevo tipo de prenda"
+              (click)="toggleAddCategory()"
+            >
+              +
+            </button>
+          </div>
+
+          @if (addingCategory()) {
+            <div class="inline-creator">
+              <label class="sr-only" for="new-category-input">Nuevo tipo de prenda</label>
+              <input
+                id="new-category-input"
+                type="text"
+                class="field-input"
+                placeholder="Ej. Chalecos, Pantalones..."
+                [value]="newCategoryDraft()"
+                (input)="onCategoryDraftInput($event)"
+                (keydown.enter)="$event.preventDefault(); confirmAddCategory()"
+              />
+              <div class="inline-creator-actions">
+                <button type="button" class="btn btn-primary btn-sm" (click)="confirmAddCategory()">
+                  Agregar filtro
+                </button>
+                <button type="button" class="mini-link" (click)="toggleAddCategory()">
+                  Cancelar
+                </button>
+              </div>
+              @if (newCategoryError()) {
+                <p class="field-error" role="alert">{{ newCategoryError() }}</p>
+              }
+            </div>
+          }
         </div>
       </div>
 
@@ -214,10 +255,12 @@
       <section class="specs-builder" aria-label="Ficha de Confección" formArrayName="specs">
         <div class="specs-header">
           <div>
-            <h2 class="specs-title">Ficha de Confección</h2>
+            <h2 class="specs-title">
+              Ficha de Confección <span class="required-mark" aria-hidden="true">*</span>
+            </h2>
             <p class="specs-hint">
-              Agregue subtítulos y breves descripciones las veces que desee (ej. Tejido principal,
-              Forro, Ocasión).
+              Obligatorio: seleccione o agregue un subtítulo y su breve descripción (puede añadir
+              todos los detalles que desee).
             </p>
           </div>
           <button type="button" class="btn btn-outline btn-sm" (click)="addSpecRow()">
@@ -225,57 +268,112 @@
           </button>
         </div>
 
-        @if (specsArray.controls.length > 0) {
-          <div class="spec-rows">
-            @for (row of specsArray.controls; track i; let i = $index) {
-              <div class="spec-row-card" [formGroupName]="i">
-                <div class="field-grid">
-                  <div class="field-group">
-                    <label class="field-label" [for]="'spec-subtitle-' + i">
-                      Subtítulo <span class="required-mark" aria-hidden="true">*</span>
-                    </label>
-                    <input
+        @if (showMissingSpecsError()) {
+          <p class="field-error" role="alert">
+            Debe completar al menos un detalle en la Ficha de Confección.
+          </p>
+        }
+
+        <div class="spec-rows">
+          @for (row of specsArray.controls; track i; let i = $index) {
+            <div class="spec-row-card" [formGroupName]="i">
+              <div class="field-grid">
+                <div class="field-group">
+                  <label class="field-label" [for]="'spec-subtitle-' + i">
+                    Subtítulo <span class="required-mark" aria-hidden="true">*</span>
+                  </label>
+                  <div class="input-with-action">
+                    <select
                       [id]="'spec-subtitle-' + i"
-                      type="text"
                       class="field-input"
                       formControlName="subtitle"
-                      maxlength="80"
-                      placeholder="Ej. Tejido principal"
                       [class.has-error]="showSpecError(i, 'subtitle')"
-                    />
-                    @if (showSpecError(i, 'subtitle')) {
-                      <p class="field-error" role="alert">Ingrese un subtítulo.</p>
-                    }
+                    >
+                      <option value="" disabled>Seleccione un subtítulo</option>
+                      @for (option of catalog.specSubtitles(); track option) {
+                        <option [value]="option">{{ option }}</option>
+                      }
+                    </select>
+                    <button
+                      type="button"
+                      class="icon-plus-btn"
+                      [attr.aria-expanded]="addingSubtitleRow() === i"
+                      aria-label="Agregar nuevo subtítulo"
+                      title="Agregar nuevo subtítulo"
+                      (click)="toggleAddSubtitle(i)"
+                    >
+                      +
+                    </button>
                   </div>
 
-                  <div class="field-group">
-                    <label class="field-label" [for]="'spec-desc-' + i">
-                      Breve descripción <span class="required-mark" aria-hidden="true">*</span>
-                    </label>
-                    <input
-                      [id]="'spec-desc-' + i"
-                      type="text"
-                      class="field-input"
-                      formControlName="description"
-                      maxlength="240"
-                      placeholder="Ej. Lana merino italiana Super 150s"
-                      [class.has-error]="showSpecError(i, 'description')"
-                    />
-                    @if (showSpecError(i, 'description')) {
-                      <p class="field-error" role="alert">Ingrese una breve descripción.</p>
-                    }
-                  </div>
+                  @if (addingSubtitleRow() === i) {
+                    <div class="inline-creator">
+                      <label class="sr-only" [for]="'new-subtitle-input-' + i">Nuevo subtítulo</label>
+                      <input
+                        [id]="'new-subtitle-input-' + i"
+                        type="text"
+                        class="field-input"
+                        placeholder="Ej. Bordado, Solapa, Tipo de cuello..."
+                        [value]="newSubtitleDraft()"
+                        (input)="onSubtitleDraftInput($event)"
+                        (keydown.enter)="$event.preventDefault(); confirmAddSubtitle(i)"
+                      />
+                      <div class="inline-creator-actions">
+                        <button
+                          type="button"
+                          class="btn btn-primary btn-sm"
+                          (click)="confirmAddSubtitle(i)"
+                        >
+                          Agregar subtítulo
+                        </button>
+                        <button
+                          type="button"
+                          class="mini-link"
+                          (click)="toggleAddSubtitle(i)"
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                      @if (newSubtitleError()) {
+                        <p class="field-error" role="alert">{{ newSubtitleError() }}</p>
+                      }
+                    </div>
+                  }
+
+                  @if (showSpecError(i, 'subtitle')) {
+                    <p class="field-error" role="alert">Seleccione o agregue un subtítulo.</p>
+                  }
                 </div>
 
+                <div class="field-group">
+                  <label class="field-label" [for]="'spec-desc-' + i">
+                    Breve descripción <span class="required-mark" aria-hidden="true">*</span>
+                  </label>
+                  <input
+                    [id]="'spec-desc-' + i"
+                    type="text"
+                    class="field-input"
+                    formControlName="description"
+                    maxlength="240"
+                    placeholder="Ej. Lana merino italiana Super 150s"
+                    [class.has-error]="showSpecError(i, 'description')"
+                  />
+                  @if (showSpecError(i, 'description')) {
+                    <p class="field-error" role="alert">Ingrese una breve descripción.</p>
+                  }
+                </div>
+              </div>
+
+              @if (specsArray.length > 1) {
                 <div class="spec-row-footer">
                   <button type="button" class="remove-link" (click)="removeSpecRow(i)">
                     Quitar detalle
                   </button>
                 </div>
-              </div>
-            }
-          </div>
-        }
+              }
+            </div>
+          }
+        </div>
       </section>
 
       <div class="form-actions">

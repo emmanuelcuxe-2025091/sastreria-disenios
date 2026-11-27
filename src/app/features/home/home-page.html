@@ -80,7 +80,7 @@
           <span class="chip-count">{{ catalog.totalSectionGarments() }}</span>
         </button>
 
-        @for (category of catalog.categories; track category.id) {
+        @for (category of catalog.categories(); track category.id) {
           <button
             type="button"
             class="filter-chip"

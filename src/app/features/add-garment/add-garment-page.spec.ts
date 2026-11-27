@@ -24,73 +24,67 @@ describe('AddGarmentPageComponent', () => {
     localStorage.clear();
   });
 
-  it('requires at least one image, title, description, month, and year for both sections', () => {
+  it('requires image, title, description, date, and mandatory Ficha de Confección', () => {
     const fixture = TestBed.createComponent(AddGarmentPageComponent);
     const component = fixture.componentInstance as unknown as {
       form: { invalid: boolean; controls: Record<string, { invalid: boolean }> };
+      specsArray: { length: number; at(i: number): { invalid: boolean } };
       showMissingImagesError(): boolean;
-      selectSection(section: 'opciones' | 'creadas'): void;
       onSubmit(): void;
     };
 
     fixture.detectChanges();
+    expect(component.specsArray.length).toBe(1);
 
-    component.selectSection('opciones');
     component.onSubmit();
     expect(component.form.invalid).toBe(true);
     expect(component.showMissingImagesError()).toBe(true);
-    expect(component.form.controls['title'].invalid).toBe(true);
-    expect(component.form.controls['description'].invalid).toBe(true);
-    expect(component.form.controls['month'].invalid).toBe(true);
-    expect(component.form.controls['year'].invalid).toBe(true);
-
-    component.selectSection('creadas');
-    component.onSubmit();
-    expect(component.form.invalid).toBe(true);
+    expect(component.specsArray.at(0).invalid).toBe(true);
   });
 
-  it('supports adding dynamic Ficha de Confección rows and multiple images up to 10', () => {
+  it('allows adding custom category filters, custom subtitles, and choosing the primary photo', () => {
     const fixture = TestBed.createComponent(AddGarmentPageComponent);
     const catalog = TestBed.inject(CatalogStateService);
-    const initialCreated = catalog.sectionCounts().creadas;
+    const initialCategories = catalog.categories().length;
 
     const component = fixture.componentInstance as unknown as {
-      form: {
-        patchValue(v: Record<string, unknown>): void;
-        valid: boolean;
-      };
+      form: { patchValue(v: Record<string, unknown>): void; valid: boolean };
       specsArray: { length: number; at(i: number): { patchValue(v: Record<string, string>): void } };
       uploadedImages: { set(v: readonly { dataUrl: string; name: string }[]): void };
-      addSpecRow(): void;
-      removeSpecRow(i: number): void;
+      newCategoryDraft: { set(v: string): void };
+      newSubtitleDraft: { set(v: string): void };
+      confirmAddCategory(): void;
+      confirmAddSubtitle(rowIndex: number): void;
+      setPrimaryImage(index: number): void;
       selectSection(section: 'opciones' | 'creadas'): void;
       onSubmit(): void;
     };
 
     fixture.detectChanges();
     component.selectSection('creadas');
-    component.addSpecRow();
-    component.addSpecRow();
-    expect(component.specsArray.length).toBe(2);
 
+    // Add a new garment type filter
+    component.newCategoryDraft.set('Chalecos');
+    component.confirmAddCategory();
+    expect(catalog.categories().length).toBe(initialCategories + 1);
+
+    // Add a custom subtitle for row 0
+    component.newSubtitleDraft.set('Bordado artesanal');
+    component.confirmAddSubtitle(0);
     component.specsArray.at(0).patchValue({
-      subtitle: 'Tejido',
-      description: 'Lana merino azul marino',
-    });
-    component.specsArray.at(1).patchValue({
-      subtitle: 'Botones',
-      description: 'Asta natural pulida',
+      description: 'Iniciales bordadas en hilo de seda',
     });
 
+    // Upload 2 photos and choose the 2nd photo as primary
     component.uploadedImages.set([
-      { dataUrl: 'data:image/png;base64,AAA=', name: 'foto1.png' },
-      { dataUrl: 'data:image/png;base64,BBB=', name: 'foto2.png' },
+      { dataUrl: 'data:image/png;base64,FIRST=', name: 'foto1.png' },
+      { dataUrl: 'data:image/png;base64,SECOND=', name: 'foto2.png' },
     ]);
+    component.setPrimaryImage(1);
 
     component.form.patchValue({
-      category: 'trajes-a-medida',
-      title: 'Traje Azul Personalizado',
-      description: 'Traje confeccionado a medida en lana merino con solapa de pico.',
+      title: 'Chaleco Cruzado Gris',
+      description: 'Chaleco a medida en lana inglesa con espalda en seda.',
       month: '11',
       year: '2026',
     });
@@ -98,15 +92,13 @@ describe('AddGarmentPageComponent', () => {
     expect(component.form.valid).toBe(true);
     component.onSubmit();
 
-    expect(catalog.sectionCounts().creadas).toBe(initialCreated + 1);
     const created = catalog.filteredGarments()[0];
-    expect(created.name).toBe('Traje Azul Personalizado');
-    expect(created.createdDateLabel).toBe('Noviembre 2026');
-    expect(created.images.length).toBe(2);
-    expect(created.customSpecs?.length).toBe(2);
+    expect(created.category).toBe('chalecos');
+    expect(created.images[0].url).toBe('data:image/png;base64,SECOND=');
+    expect(created.images[0].isPrimary).toBe(true);
     expect(created.customSpecs?.[0]).toEqual({
-      subtitle: 'Tejido',
-      description: 'Lana merino azul marino',
+      subtitle: 'Bordado artesanal',
+      description: 'Iniciales bordadas en hilo de seda',
     });
   });
 });

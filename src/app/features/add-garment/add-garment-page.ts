@@ -101,8 +101,19 @@ export class AddGarmentPageComponent implements OnInit {
 
   protected readonly selectedSection = signal<GarmentSection>('opciones');
   protected readonly uploadedImages = signal<readonly UploadedImage[]>([]);
+  protected readonly primaryImageIndex = signal<number>(0);
   protected readonly imageError = signal<string>('');
   protected readonly submittedAttempt = signal<boolean>(false);
+
+  // Inline creation of new garment type (filter)
+  protected readonly addingCategory = signal<boolean>(false);
+  protected readonly newCategoryDraft = signal<string>('');
+  protected readonly newCategoryError = signal<string>('');
+
+  // Inline creation of new Ficha de Confección subtitle for a specific row
+  protected readonly addingSubtitleRow = signal<number | null>(null);
+  protected readonly newSubtitleDraft = signal<string>('');
+  protected readonly newSubtitleError = signal<string>('');
 
   protected readonly canAddMoreImages = computed(() => this.uploadedImages().length < MAX_IMAGES);
 
@@ -137,14 +148,14 @@ export class AddGarmentPageComponent implements OnInit {
           eyebrow: 'Nueva Referencia',
           title: 'Agregar opción de prenda',
           description:
-            'Registre un modelo de referencia en el apartado de Opciones de prendas. Puede subir hasta 10 imágenes y agregar los detalles de ficha que desee.',
+            'Registre un modelo de referencia en Opciones de prendas. Suba hasta 10 imágenes, elija la principal y complete la Ficha de Confección obligatoria.',
           submitLabel: 'Guardar opción de prenda',
         }
       : {
           eyebrow: 'Nueva Confección',
           title: 'Agregar prenda creada',
           description:
-            'Documente una prenda confeccionada en el apartado de Prendas creadas. Puede subir hasta 10 imágenes y agregar los detalles de ficha que desee.',
+            'Documente una prenda confeccionada en Prendas creadas. Suba hasta 10 imágenes, elija la principal y complete la Ficha de Confección obligatoria.',
           submitLabel: 'Guardar prenda creada',
         },
   );
@@ -157,10 +168,72 @@ export class AddGarmentPageComponent implements OnInit {
     } else {
       this.selectedSection.set(this.catalog.filter().section);
     }
+
+    // Ficha de Confección is mandatory: start with one required row ready to fill
+    if (this.specsArray.length === 0) {
+      this.addSpecRow();
+    }
   }
 
   protected selectSection(section: GarmentSection): void {
     this.selectedSection.set(section);
+  }
+
+  protected toggleAddCategory(): void {
+    const next = !this.addingCategory();
+    this.addingCategory.set(next);
+    this.newCategoryDraft.set('');
+    this.newCategoryError.set('');
+  }
+
+  protected onCategoryDraftInput(event: Event): void {
+    this.newCategoryDraft.set((event.target as HTMLInputElement).value);
+    this.newCategoryError.set('');
+  }
+
+  protected confirmAddCategory(): void {
+    const label = this.newCategoryDraft().trim();
+    if (label.length < 2) {
+      this.newCategoryError.set('Ingrese un nombre de al menos 2 caracteres.');
+      return;
+    }
+
+    const created = this.catalog.addCategory(label);
+    if (created) {
+      this.form.controls.category.setValue(created.id);
+      this.addingCategory.set(false);
+      this.newCategoryDraft.set('');
+      this.newCategoryError.set('');
+    }
+  }
+
+  protected toggleAddSubtitle(rowIndex: number): void {
+    const isSame = this.addingSubtitleRow() === rowIndex;
+    this.addingSubtitleRow.set(isSame ? null : rowIndex);
+    this.newSubtitleDraft.set('');
+    this.newSubtitleError.set('');
+  }
+
+  protected onSubtitleDraftInput(event: Event): void {
+    this.newSubtitleDraft.set((event.target as HTMLInputElement).value);
+    this.newSubtitleError.set('');
+  }
+
+  protected confirmAddSubtitle(rowIndex: number): void {
+    const label = this.newSubtitleDraft().trim();
+    if (label.length < 2) {
+      this.newSubtitleError.set('Ingrese un subtítulo de al menos 2 caracteres.');
+      return;
+    }
+
+    const created = this.catalog.addSpecSubtitle(label);
+    if (created) {
+      this.specsArray.at(rowIndex).controls.subtitle.setValue(created);
+      this.specsArray.at(rowIndex).controls.subtitle.markAsTouched();
+      this.addingSubtitleRow.set(null);
+      this.newSubtitleDraft.set('');
+      this.newSubtitleError.set('');
+    }
   }
 
   protected async onFilesSelected(event: Event): Promise<void> {
@@ -208,7 +281,11 @@ export class AddGarmentPageComponent implements OnInit {
     }
 
     if (added.length > 0) {
+      const wasEmpty = this.uploadedImages().length === 0;
       this.uploadedImages.update((current) => [...current, ...added].slice(0, MAX_IMAGES));
+      if (wasEmpty) {
+        this.primaryImageIndex.set(0);
+      }
     }
     if (warnings.length > 0) {
       this.imageError.set(warnings[0]);
@@ -216,15 +293,23 @@ export class AddGarmentPageComponent implements OnInit {
   }
 
   protected setPrimaryImage(index: number): void {
-    this.uploadedImages.update((current) => {
-      if (index <= 0 || index >= current.length) return current;
-      const selected = current[index];
-      return [selected, ...current.filter((_, idx) => idx !== index)];
-    });
+    if (index >= 0 && index < this.uploadedImages().length) {
+      this.primaryImageIndex.set(index);
+    }
   }
 
   protected removeImage(index: number): void {
+    const currentPrimary = this.primaryImageIndex();
     this.uploadedImages.update((current) => current.filter((_, idx) => idx !== index));
+    const remaining = this.uploadedImages().length;
+
+    if (remaining === 0) {
+      this.primaryImageIndex.set(0);
+    } else if (index === currentPrimary) {
+      this.primaryImageIndex.set(0);
+    } else if (index < currentPrimary) {
+      this.primaryImageIndex.set(currentPrimary - 1);
+    }
     this.imageError.set('');
   }
 
@@ -238,6 +323,12 @@ export class AddGarmentPageComponent implements OnInit {
   }
 
   protected removeSpecRow(index: number): void {
+    if (this.specsArray.length <= 1) {
+      return;
+    }
+    if (this.addingSubtitleRow() === index) {
+      this.addingSubtitleRow.set(null);
+    }
     this.specsArray.removeAt(index);
   }
 
@@ -255,14 +346,24 @@ export class AddGarmentPageComponent implements OnInit {
     return this.submittedAttempt() && this.uploadedImages().length === 0;
   }
 
+  protected showMissingSpecsError(): boolean {
+    return this.submittedAttempt() && this.specsArray.length === 0;
+  }
+
   protected onSubmit(): void {
     this.submittedAttempt.set(true);
     this.form.markAllAsTouched();
 
     const images = this.uploadedImages();
-    if (this.form.invalid || images.length === 0) {
+    if (this.form.invalid || images.length === 0 || this.specsArray.length === 0) {
       return;
     }
+
+    const primaryIdx = Math.min(this.primaryImageIndex(), images.length - 1);
+    const orderedImages = [
+      images[primaryIdx].dataUrl,
+      ...images.filter((_, idx) => idx !== primaryIdx).map((item) => item.dataUrl),
+    ];
 
     const raw = this.form.getRawValue();
     this.catalog.addGarment({
@@ -272,7 +373,7 @@ export class AddGarmentPageComponent implements OnInit {
       description: raw.description,
       month: Number(raw.month),
       year: Number(raw.year),
-      images: images.map((item) => item.dataUrl),
+      images: orderedImages,
       customSpecs: raw.specs.map((row) => ({
         subtitle: row.subtitle,
         description: row.description,

@@ -126,4 +126,20 @@ describe('CatalogStateService', () => {
     expect(service.sectionCounts().opciones).toBe(7);
     expect(service.getGarmentBySlug(added.slug)?.name).toBe('Blazer Referencia Expert');
   });
+
+  it('adds custom garment categories and spec subtitle options without duplicates', () => {
+    const initialCats = service.categories().length;
+    const addedCat = service.addCategory('Pantalones a Medida');
+    expect(addedCat?.id).toBe('pantalones-a-medida');
+    expect(service.categories().length).toBe(initialCats + 1);
+
+    // Deduplicates case/accent-insensitively
+    service.addCategory('pantalones a medida');
+    expect(service.categories().length).toBe(initialCats + 1);
+
+    const initialSubs = service.specSubtitles().length;
+    const addedSub = service.addSpecSubtitle('Tipo de Solapa');
+    expect(addedSub).toBe('Tipo de Solapa');
+    expect(service.specSubtitles().length).toBe(initialSubs + 1);
+  });
 });
