@@ -11,7 +11,7 @@
 @media (hover: hover) {
   .garment-card:hover {
     transform: translateY(-4px);
-    border-color: var(--color-border-strong);
+    border-color: var(--color-primary-bright);
     box-shadow: var(--shadow-elevated);
 
     .card-image {
@@ -19,7 +19,7 @@
     }
 
     .card-cta {
-      color: var(--color-accent);
+      color: var(--color-accent-warm-ink);
       transform: translateX(3px);
     }
   }
@@ -68,12 +68,12 @@
 }
 
 .badge-year {
-  background-color: rgba(27, 36, 48, 0.84);
-  color: #f6f2eb;
+  background-color: rgba(28, 67, 142, 0.92);
+  color: var(--color-complementary-soft);
 }
 
 .badge-code {
-  background-color: rgba(250, 247, 242, 0.88);
+  background-color: var(--color-complementary);
   color: var(--color-ink);
 }
 

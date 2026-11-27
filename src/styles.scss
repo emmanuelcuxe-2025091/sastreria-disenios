@@ -1,19 +1,28 @@
 :root {
-  /* Editorial Luxury Palette */
-  --color-bg: #faf7f2;
-  --color-bg-alt: #f2ece2;
+  /* Paleta Complementaria (paletadecolores.org):
+     #1C438E · #2F6FED · #C1D4FA · #EDAD2F · #F6D697 */
+  --color-primary: #1c438e;
+  --color-primary-bright: #2f6fed;
+  --color-primary-soft: #c1d4fa;
+  --color-complementary: #edad2f;
+  --color-complementary-soft: #f6d697;
+
+  --color-bg: #f5f8ff;
+  --color-bg-alt: #eaf1fe;
   --color-surface: #ffffff;
-  --color-surface-tint: #f7f3ec;
-  --color-ink: #1a1816;
-  --color-ink-soft: #4e473f;
-  --color-ink-muted: #766d63;
-  --color-border: #e5ddd1;
-  --color-border-strong: #cfc3b2;
-  --color-accent: #8f6e40;
-  --color-accent-hover: #755830;
-  --color-accent-soft: rgba(143, 110, 64, 0.11);
-  --color-navy: #1b2430;
-  --color-navy-ink: #f6f2eb;
+  --color-surface-tint: #f0f5ff;
+  --color-ink: #10244d;
+  --color-ink-soft: #2c4370;
+  --color-ink-muted: #526a96;
+  --color-border: #c1d4fa;
+  --color-border-strong: #8fb1f4;
+  --color-accent: #2f6fed;
+  --color-accent-hover: #1c438e;
+  --color-accent-warm: #edad2f;
+  --color-accent-warm-ink: #996507;
+  --color-accent-soft: #f6d697;
+  --color-navy: #1c438e;
+  --color-navy-ink: #ffffff;
 
   /* Typography */
   --font-display: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
@@ -21,11 +30,11 @@
 
   /* Layout & Motion */
   --container-max: 1240px;
-  --radius-xs: 2px;
-  --radius-sm: 6px;
+  --radius-xs: 4px;
+  --radius-sm: 8px;
   --radius-md: 12px;
-  --shadow-subtle: 0 1px 2px rgba(26, 24, 22, 0.04), 0 8px 24px rgba(26, 24, 22, 0.05);
-  --shadow-elevated: 0 14px 36px rgba(26, 24, 22, 0.09);
+  --shadow-subtle: 0 2px 6px rgba(28, 67, 142, 0.06), 0 10px 26px rgba(28, 67, 142, 0.08);
+  --shadow-elevated: 0 14px 36px rgba(28, 67, 142, 0.14);
   --ease-editorial: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -84,7 +93,7 @@ select {
 }
 
 :focus-visible {
-  outline: 2px solid var(--color-accent);
+  outline: 2px solid var(--color-complementary);
   outline-offset: 3px;
 }
 
@@ -131,18 +140,18 @@ select {
   gap: 0.55rem;
   font-family: var(--font-sans);
   font-size: 0.7rem;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--color-accent);
+  color: var(--color-primary-bright);
 
   &::before {
     content: '';
     display: inline-block;
     flex-shrink: 0;
-    width: 1.4rem;
-    height: 1px;
-    background-color: currentColor;
+    width: 1.5rem;
+    height: 2px;
+    background-color: var(--color-complementary);
   }
 }
 
@@ -173,24 +182,25 @@ select {
 }
 
 .btn-primary {
-  background-color: var(--color-navy);
+  background-color: var(--color-primary);
   color: var(--color-navy-ink);
-  border-color: var(--color-navy);
+  border-color: var(--color-primary);
 
   &:hover {
-    background-color: var(--color-accent);
-    border-color: var(--color-accent);
+    background-color: var(--color-primary-bright);
+    border-color: var(--color-primary-bright);
   }
 }
 
 .btn-outline {
-  background-color: transparent;
-  color: var(--color-ink);
-  border-color: var(--color-border-strong);
+  background-color: var(--color-surface);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
 
   &:hover {
-    border-color: var(--color-ink);
-    background-color: var(--color-surface);
+    border-color: var(--color-complementary);
+    background-color: var(--color-complementary-soft);
+    color: var(--color-ink);
   }
 }
 
