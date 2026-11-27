@@ -9,9 +9,11 @@ import {
   Garment,
   GarmentCategory,
   GarmentEra,
+  GarmentSection,
 } from '../models/catalog.models';
 
 const DEFAULT_FILTER: CatalogFilter = {
+  section: 'opciones',
   search: '',
   categories: [],
   era: 'all',
@@ -46,8 +48,25 @@ export class CatalogStateService {
   readonly filter = this._filter.asReadonly();
   readonly dataSource = this.repository.sourceName;
 
+  readonly sectionCounts = computed(() => {
+    let opciones = 0;
+    let creadas = 0;
+    for (const garment of this._garments()) {
+      if (garment.section === 'opciones') opciones++;
+      else creadas++;
+    }
+    return { opciones, creadas };
+  });
+
+  readonly sectionGarments = computed(() => {
+    const activeSection = this._filter().section;
+    return this._garments().filter((garment) => garment.section === activeSection);
+  });
+
+  readonly totalSectionGarments = computed(() => this.sectionGarments().length);
+
   readonly featuredGarments = computed(() =>
-    this._garments()
+    this.sectionGarments()
       .filter((garment) => garment.featured)
       .slice(0, 6),
   );
@@ -56,7 +75,7 @@ export class CatalogStateService {
     const { search, categories, era, sort } = this._filter();
     const query = normalizeText(search);
 
-    const matching = this._garments().filter((garment) => {
+    const matching = this.sectionGarments().filter((garment) => {
       if (categories.length > 0 && !categories.includes(garment.category)) {
         return false;
       }
@@ -110,7 +129,7 @@ export class CatalogStateService {
     for (const category of this.categories) {
       counts.set(category.id, 0);
     }
-    for (const garment of this._garments()) {
+    for (const garment of this.sectionGarments()) {
       counts.set(garment.category, (counts.get(garment.category) ?? 0) + 1);
     }
     return counts;
@@ -142,17 +161,20 @@ export class CatalogStateService {
   }
 
   getRelatedGarments(garment: Garment, limit = 3): readonly Garment[] {
-    const sameCategory = this._garments().filter(
-      (item) => item.slug !== garment.slug && item.category === garment.category,
+    const pool = this._garments().filter(
+      (item) => item.slug !== garment.slug && item.section === garment.section,
     );
-    const others = this._garments().filter(
-      (item) => item.slug !== garment.slug && item.category !== garment.category,
-    );
+    const sameCategory = pool.filter((item) => item.category === garment.category);
+    const others = pool.filter((item) => item.category !== garment.category);
     return [...sameCategory, ...others].slice(0, limit);
   }
 
   getCategoryLabel(categoryId: GarmentCategory): string {
     return this.categories.find((cat) => cat.id === categoryId)?.label ?? categoryId;
+  }
+
+  setSection(section: GarmentSection): void {
+    this._filter.update((current) => ({ ...current, section, categories: [] }));
   }
 
   setSearch(search: string): void {
@@ -190,6 +212,9 @@ export class CatalogStateService {
   }
 
   resetFilters(): void {
-    this._filter.set(DEFAULT_FILTER);
+    this._filter.update((current) => ({
+      ...DEFAULT_FILTER,
+      section: current.section,
+    }));
   }
 }

@@ -1,6 +1,5 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
-import { APP_ENVIRONMENT } from '../../core/config/catalog.tokens';
-import { GarmentCategory } from '../../core/models/catalog.models';
+import { ChangeDetectionStrategy, Component, computed, inject, OnInit } from '@angular/core';
+import { GarmentCategory, GarmentSection } from '../../core/models/catalog.models';
 import { CatalogStateService } from '../../core/services/catalog-state.service';
 import { GarmentCardComponent } from '../../shared/components/garment-card/garment-card';
 import { SectionHeaderComponent } from '../../shared/components/section-header/section-header';
@@ -14,12 +13,31 @@ import { SectionHeaderComponent } from '../../shared/components/section-header/s
 })
 export class HomePageComponent implements OnInit {
   protected readonly catalog = inject(CatalogStateService);
-  protected readonly env = inject(APP_ENVIRONMENT);
 
-  protected readonly yearsInBusiness = new Date().getFullYear() - this.env.company.foundedYear;
+  protected readonly activeSection = computed(() => this.catalog.filter().section);
+
+  protected readonly sectionMeta = computed(() =>
+    this.activeSection() === 'opciones'
+      ? {
+          eyebrow: 'Modelos de Referencia',
+          title: 'Opciones de prendas',
+          description:
+            'Explore modelos de referencia disponibles para confeccionar a medida según su preferencia de tejido, corte y acabados.',
+        }
+      : {
+          eyebrow: 'Archivo de Confección',
+          title: 'Prendas creadas',
+          description:
+            'Recorra las prendas elaboradas por nuestra casa a lo largo de su trayectoria, filtrando por tipo de ropa o buscando por tejido y colección.',
+        },
+  );
 
   ngOnInit(): void {
     void this.catalog.ensureLoaded();
+  }
+
+  protected selectSection(section: GarmentSection): void {
+    this.catalog.setSection(section);
   }
 
   protected onSearchInput(event: Event): void {

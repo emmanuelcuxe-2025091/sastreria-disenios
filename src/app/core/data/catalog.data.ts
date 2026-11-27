@@ -90,10 +90,252 @@ export const CRAFTSMANSHIP_PILLARS: readonly CraftsmanshipPillar[] = [
 ];
 
 export const CATALOG_GARMENTS: readonly Garment[] = [
+  // ===========================================================================
+  // OPCIONES DE PRENDAS (Modelos de referencia disponibles para confección)
+  // ===========================================================================
+  {
+    id: 'option-sd-ref-01',
+    code: 'OP-01',
+    slug: 'opcion-traje-ejecutivo-clasico',
+    section: 'opciones',
+    name: 'Traje Ejecutivo Recto Dos Botones',
+    subtitle: 'Referencia base en lana merino gris azulado con solapa de muesca',
+    category: 'trajes-a-medida',
+    collection: 'Opciones de Referencia',
+    year: 2026,
+    era: '2022-2026',
+    featured: true,
+    summary:
+      'Modelo de referencia versátil de corte recto y dos botones, personalizable en tejido, ancho de solapa, tipo de bolsillo y forro interior.',
+    story:
+      'Pensado como punto de partida para clientes que buscan un traje atemporal de uso ejecutivo o formal, adaptable completamente a sus medidas y preferencias textiles.',
+    techniques: [
+      'Patronaje individual desde cero',
+      'Elección de entretela Full o Half Canvas',
+      'Personalización de solapa y botonadura',
+      'Iniciales bordadas en forro interior',
+    ],
+    specs: {
+      fabric: 'Lana merino Super 130s – 150s (catálogo de telas)',
+      lining: 'Cupro Bemberg personalizable',
+      construction: 'Full Canvas o Half Canvas a elección',
+      craftingHours: 56,
+      fittings: 3,
+      occasion: 'Uso ejecutivo, reuniones directivas y eventos formales',
+    },
+    images: [
+      {
+        url: 'images/catalog/opcion-traje-ejecutivo.jpg',
+        alt: 'Imagen de referencia de traje ejecutivo recto de dos botones en lana azul carbón',
+        caption: 'Modelo de referencia — adaptable en color, tejido y detalles de solapa.',
+        isPrimary: true,
+      },
+    ],
+  },
+  {
+    id: 'option-sd-ref-02',
+    code: 'OP-02',
+    slug: 'opcion-esmoquin-ceremonia-medianoche',
+    section: 'opciones',
+    name: 'Esmoquin Ceremonia Azul Medianoche',
+    subtitle: 'Referencia de etiqueta con solapa de pico en seda negra',
+    category: 'gala-y-etiqueta',
+    collection: 'Opciones de Referencia',
+    year: 2026,
+    era: '2022-2026',
+    featured: true,
+    summary:
+      'Propuesta de referencia en azul medianoche profundo con solapas de pico en seda natural, disponible también en negro Barathea o solapa chal.',
+    story:
+      'Una silueta diseñada para bodas y galas de noche donde el azul medianoche ofrece mayor profundidad visual bajo iluminación cálida.',
+    techniques: [
+      'Solapa de pico o chal en seda natural',
+      'Botones forrados a mano',
+      'Pantalón de etiqueta con galón lateral',
+      'Entalle personalizado en cintura y pecho',
+    ],
+    specs: {
+      fabric: 'Lana Barathea azul medianoche o negro (320 g/m²)',
+      lining: 'Seda jacquard al tono',
+      construction: 'Full Canvas artesanal',
+      craftingHours: 68,
+      fittings: 3,
+      occasion: 'Bodas de noche, galas y recepciones de etiqueta',
+    },
+    images: [
+      {
+        url: 'images/catalog/opcion-smoking-ceremonia.jpg',
+        alt: 'Imagen de referencia de esmoquin azul medianoche con solapa de pico en seda negra',
+        caption: 'Referencia de etiqueta — personalizable en solapa chal o pico.',
+        isPrimary: true,
+      },
+    ],
+  },
+  {
+    id: 'option-sd-ref-03',
+    code: 'OP-03',
+    slug: 'opcion-blazer-femenino-estructurado',
+    section: 'opciones',
+    name: 'Blazer Femenino Corte Arquitectónico',
+    subtitle: 'Referencia en crepé de lana topo con cintura definida',
+    category: 'sastreria-femenina',
+    collection: 'Opciones de Referencia',
+    year: 2026,
+    era: '2022-2026',
+    featured: true,
+    summary:
+      'Opción de sastrería femenina con línea limpia, hombro estilizado y botonadura sencilla, combinable con pantalón recto, palazzo o falda lápiz.',
+    story:
+      'Creado como referencia versátil para ejecutivas y eventos diurnos, permitiendo ajustar largo de saco, escote de solapa y paleta de colores.',
+    techniques: [
+      'Pinzas esculpidas a medida',
+      'Hombrera anatómica ligera',
+      'Forro de seda transpirable',
+      'Botones de asta o acabado dorado mate',
+    ],
+    specs: {
+      fabric: 'Crepé de lana virgen y seda (gama neutra y tonos de temporada)',
+      lining: 'Seda habotai o cupro fino',
+      construction: 'Entretela ligera flotante',
+      craftingHours: 48,
+      fittings: 3,
+      occasion: 'Dirección ejecutiva, presentaciones y protocolo diurno',
+    },
+    images: [
+      {
+        url: 'images/catalog/opcion-blazer-femenino.jpg',
+        alt: 'Imagen de referencia de blazer femenino estructurado en lana color camel topo',
+        caption: 'Modelo de referencia femenino — adaptable en largo y conjunto.',
+        isPrimary: true,
+      },
+    ],
+  },
+  {
+    id: 'option-sd-ref-04',
+    code: 'OP-04',
+    slug: 'opcion-abrigo-chesterfield-lana',
+    section: 'opciones',
+    name: 'Abrigo Chesterfield Lana Azul Marino',
+    subtitle: 'Referencia recta con cuello de terciopelo y botonadura oculta',
+    category: 'abrigos-y-capas',
+    collection: 'Opciones de Referencia',
+    year: 2026,
+    era: '2022-2026',
+    featured: true,
+    summary:
+      'Abrigo clásico de silueta estilizada para vestir sobre traje completo o conjunto casual elegante, disponible en lana virgen o mezcla con cachemira.',
+    story:
+      'Inspirado en el abrigo Chesterfield británico, permite elegir largo sobre o bajo la rodilla, cuello liso o con detalle de terciopelo.',
+    techniques: [
+      'Paño de alto gramaje cortado a mano',
+      'Detalle opcional de cuello en terciopelo',
+      'Bolsillos inclinados con forro térmico',
+      'Pespunteado perimetral artesanal',
+    ],
+    specs: {
+      fabric: 'Lana virgen europea o mezcla lana-cachemira (480–540 g/m²)',
+      lining: 'Cupro satinado al tono',
+      construction: 'Armado sastrero para uso sobre traje',
+      craftingHours: 54,
+      fittings: 3,
+      occasion: 'Clima frío, viajes de negocio y protocolo exterior',
+    },
+    images: [
+      {
+        url: 'images/catalog/opcion-abrigo-lana.jpg',
+        alt: 'Imagen de referencia de abrigo Chesterfield azul marino en lana pura con cuello de terciopelo',
+        caption: 'Referencia de abrigo clásico — personalizable en gramaje y tono.',
+        isPrimary: true,
+      },
+    ],
+  },
+  {
+    id: 'option-sd-ref-05',
+    code: 'OP-05',
+    slug: 'opcion-camisa-popelin-medida',
+    section: 'opciones',
+    name: 'Camisa a Medida Popelín Celeste',
+    subtitle: 'Referencia en algodón egipcio con cuello italiano y nácar',
+    category: 'camiseria-artesanal',
+    collection: 'Opciones de Referencia',
+    year: 2026,
+    era: '2022-2026',
+    featured: false,
+    summary:
+      'Camisa de vestir personalizable en tipo de cuello (italiano, francés o cutaway), puño sencillo o gemelos, y monograma bordado.',
+    story:
+      'Ofrece ajuste exacto en cuello, hombros y largo de manga con una selección de tejidos lisos, rayas finas y microcuadros en algodón egipcio.',
+    techniques: [
+      'Costura francesa de alta densidad',
+      'Cuello y puños sin fusionado rígido',
+      'Botones de nácar natural',
+      'Monograma opcional bordado a tono',
+    ],
+    specs: {
+      fabric: 'Algodón egipcio doble cabo 120/2 o 140/2',
+      lining: 'Entretela suave de algodón puro',
+      construction: 'Camisería artesanal individual',
+      craftingHours: 16,
+      fittings: 2,
+      occasion: 'Oficina, etiqueta formal y uso diario refinado',
+    },
+    images: [
+      {
+        url: 'images/catalog/opcion-camisa-medida.jpg',
+        alt: 'Imagen de referencia de camisa a medida celeste en popelín de algodón egipcio',
+        caption: 'Referencia de camisería — variedad de cuellos, puños y telas.',
+        isPrimary: true,
+      },
+    ],
+  },
+  {
+    id: 'option-sd-ref-06',
+    code: 'OP-06',
+    slug: 'opcion-conjunto-corporativo-gris',
+    section: 'opciones',
+    name: 'Conjunto Corporativo Espiga Gris',
+    subtitle: 'Referencia institucional en lana fría de alta resistencia',
+    category: 'vestuario-corporativo',
+    collection: 'Opciones de Referencia',
+    year: 2026,
+    era: '2022-2026',
+    featured: false,
+    summary:
+      'Propuesta de vestuario ejecutivo coordinado para equipos empresariales, diseñada con tejidos transpirables resistentes al uso intensivo.',
+    story:
+      'Cada integración corporativa incluye toma de medidas individual para mantener homogeneidad visual de marca sin sacrificar comodidad.',
+    techniques: [
+      'Tallaje personalizado por integrante',
+      'Tejido de recuperación rápida antiarrugas',
+      'Costuras de refuerzo en zonas de tensión',
+      'Opciones coordinadas masculinas y femeninas',
+    ],
+    specs: {
+      fabric: 'Lana fría tropical micro-espiga (260 g/m²)',
+      lining: 'Viscosa transpirable de alta durabilidad',
+      construction: 'Half Canvas corporativo reforzado',
+      craftingHours: 34,
+      fittings: 2,
+      occasion: 'Equipos directivos, banca, hotelería y atención ejecutiva',
+    },
+    images: [
+      {
+        url: 'images/catalog/opcion-conjunto-corporativo.jpg',
+        alt: 'Imagen de referencia de conjunto corporativo gris pizarra con tejido micro-espiga',
+        caption: 'Referencia institucional — adaptable a la paleta de su empresa.',
+        isPrimary: true,
+      },
+    ],
+  },
+
+  // ===========================================================================
+  // PRENDAS CREADAS (Archivo de prendas confeccionadas en nuestra trayectoria)
+  // ===========================================================================
   {
     id: 'garment-sd-2025-01',
     code: 'SD-2025-01',
     slug: 'traje-cruzado-azul-medianoche',
+    section: 'creadas',
     name: 'Traje Cruzado Azul Medianoche',
     subtitle: 'Lana Super 150s con solapa de pico y caída estructural',
     category: 'trajes-a-medida',
@@ -104,7 +346,7 @@ export const CATALOG_GARMENTS: readonly Garment[] = [
     summary:
       'Traje cruzado de seis botones con solapa de pico generosa y hombros equilibrados que proyectan presencia clásica con ligereza contemporánea.',
     story:
-      'Confeccionado para celebrar casi tres décadas de patronaje propio en el taller. Cada costura interna fue asentada con plancha tradicional de vapor para dar a la solapa una rodadura limpia y duradera.',
+      'Confeccionado para celebrar casi tres décadas de patronaje propio en el taller. Cada costura interior fue asentada con plancha tradicional de vapor para dar a la solapa una rodadura limpia y duradera.',
     techniques: [
       'Entretela flotante Full Canvas',
       'Picado manual de solapa',
@@ -138,6 +380,7 @@ export const CATALOG_GARMENTS: readonly Garment[] = [
     id: 'garment-sd-2024-04',
     code: 'SD-2024-04',
     slug: 'esmoquin-barathea-gala-imperial',
+    section: 'creadas',
     name: 'Esmoquin Barathea Gala Imperial',
     subtitle: 'Solapa chal en seda grosgrain y corte entallado de rigor',
     category: 'gala-y-etiqueta',
@@ -182,6 +425,7 @@ export const CATALOG_GARMENTS: readonly Garment[] = [
     id: 'garment-sd-2025-07',
     code: 'SD-2025-07',
     slug: 'conjunto-marfil-atelier-femenino',
+    section: 'creadas',
     name: 'Conjunto Marfil Atelier',
     subtitle: 'Blazer arquitectónico de cintura esculpida y pantalón fluido',
     category: 'sastreria-femenina',
@@ -226,6 +470,7 @@ export const CATALOG_GARMENTS: readonly Garment[] = [
     id: 'garment-sd-2023-02',
     code: 'SD-2023-02',
     slug: 'abrigo-cruzado-cachemira-camel',
+    section: 'creadas',
     name: 'Abrigo Cruzado Cachemira Camel',
     subtitle: 'Paño de cachemira pura con solapas amplias y pespunte a mano',
     category: 'abrigos-y-capas',
@@ -264,6 +509,7 @@ export const CATALOG_GARMENTS: readonly Garment[] = [
     id: 'garment-sd-2021-09',
     code: 'SD-2021-09',
     slug: 'traje-lino-mediterraneo-arena',
+    section: 'creadas',
     name: 'Traje Tres Piezas Lino Arena',
     subtitle: 'Sastrería desestructurada en lino irlandés de alta caída',
     category: 'trajes-a-medida',
@@ -302,6 +548,7 @@ export const CATALOG_GARMENTS: readonly Garment[] = [
     id: 'garment-sd-2020-03',
     code: 'SD-2020-03',
     slug: 'vestido-gala-terciopelo-borgona',
+    section: 'creadas',
     name: 'Vestido de Gala Terciopelo Borgoña',
     subtitle: 'Corpiño arquitectónico de alta costura y falda drapeada',
     category: 'gala-y-etiqueta',
@@ -340,6 +587,7 @@ export const CATALOG_GARMENTS: readonly Garment[] = [
     id: 'garment-sd-2019-11',
     code: 'SD-2019-11',
     slug: 'camisa-etiqueta-algodon-egipcio',
+    section: 'creadas',
     name: 'Camisa Artesanal Algodón Egipcio',
     subtitle: 'Popelín doble cabo 140/2 con puño francés y nácar australiano',
     category: 'camiseria-artesanal',
@@ -378,6 +626,7 @@ export const CATALOG_GARMENTS: readonly Garment[] = [
     id: 'garment-sd-2014-05',
     code: 'SD-2014-05',
     slug: 'linea-corporativa-banca-privada',
+    section: 'creadas',
     name: 'Colección Ejecutiva Banca Privada',
     subtitle: 'Sastrería institucional coordinada para dirección y protocolo',
     category: 'vestuario-corporativo',
@@ -416,6 +665,7 @@ export const CATALOG_GARMENTS: readonly Garment[] = [
     id: 'garment-sd-2004-02',
     code: 'SD-2004-02',
     slug: 'traje-diplomatico-raya-diplomatica',
+    section: 'creadas',
     name: 'Traje Histórico Raya Diplomática',
     subtitle: 'Pieza fundacional del archivo en franela gris carbón',
     category: 'trajes-a-medida',
