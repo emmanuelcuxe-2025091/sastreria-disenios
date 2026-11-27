@@ -17,13 +17,21 @@ describe('CatalogStateService', () => {
     await service.ensureLoaded();
   });
 
-  it('loads the curated archive garments and company milestones', () => {
-    expect(service.totalGarments()).toBeGreaterThanOrEqual(9);
-    expect(service.milestones().length).toBeGreaterThanOrEqual(5);
-    expect(service.featuredGarments().length).toBeGreaterThan(0);
+  it('loads reference options and created garments in separate sections', () => {
+    expect(service.sectionCounts().opciones).toBe(6);
+    expect(service.sectionCounts().creadas).toBe(9);
+    expect(service.totalGarments()).toBe(15);
+
+    expect(service.filter().section).toBe('opciones');
+    expect(service.filteredGarments().every((item) => item.section === 'opciones')).toBe(true);
+
+    service.setSection('creadas');
+    expect(service.filteredGarments().length).toBe(9);
+    expect(service.filteredGarments().every((item) => item.section === 'creadas')).toBe(true);
   });
 
   it('supports selecting and toggling multiple garment categories simultaneously', () => {
+    service.setSection('creadas');
     service.toggleCategory('gala-y-etiqueta');
     service.toggleCategory('abrigos-y-capas');
 
@@ -44,10 +52,11 @@ describe('CatalogStateService', () => {
 
     service.clearCategories();
     expect(service.activeFilterCount()).toBe(0);
-    expect(service.filteredGarments().length).toBe(service.totalGarments());
+    expect(service.filteredGarments().length).toBe(service.totalSectionGarments());
   });
 
   it('supports accent-insensitive search across fabric and name', () => {
+    service.setSection('creadas');
     service.setSearch('borgona');
 
     const results = service.filteredGarments();
@@ -56,6 +65,7 @@ describe('CatalogStateService', () => {
   });
 
   it('sorts chronologically from oldest to newest when archive sort is selected', () => {
+    service.setSection('creadas');
     service.setSort('archive');
 
     const years = service.filteredGarments().map((item) => item.year);
@@ -63,7 +73,8 @@ describe('CatalogStateService', () => {
     expect(years).toEqual(sortedYears);
   });
 
-  it('resets all active filters cleanly', () => {
+  it('resets active filters while preserving the current section', () => {
+    service.setSection('creadas');
     service.patchFilter({
       search: 'lino',
       categories: ['trajes-a-medida', 'camiseria-artesanal'],
@@ -72,16 +83,18 @@ describe('CatalogStateService', () => {
     expect(service.activeFilterCount()).toBe(4);
 
     service.resetFilters();
+    expect(service.filter().section).toBe('creadas');
     expect(service.activeFilterCount()).toBe(0);
-    expect(service.filteredGarments().length).toBe(service.totalGarments());
+    expect(service.filteredGarments().length).toBe(9);
   });
 
-  it('returns related garments excluding the current garment', () => {
+  it('returns related garments from the same section excluding the current garment', () => {
     const garment = service.getGarmentBySlug('traje-cruzado-azul-medianoche');
     expect(garment).not.toBeNull();
 
     const related = service.getRelatedGarments(garment!, 3);
     expect(related.length).toBe(3);
+    expect(related.every((item) => item.section === garment!.section)).toBe(true);
     expect(related.some((item) => item.slug === garment!.slug)).toBe(false);
   });
 });

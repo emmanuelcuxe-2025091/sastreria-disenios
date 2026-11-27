@@ -1,3 +1,5 @@
+export type GarmentSection = 'opciones' | 'creadas';
+
 export type GarmentCategory =
   | 'trajes-a-medida'
   | 'gala-y-etiqueta'
@@ -30,6 +32,7 @@ export interface Garment {
   readonly id: string;
   readonly code: string;
   readonly slug: string;
+  readonly section: GarmentSection;
   readonly name: string;
   readonly subtitle: string;
   readonly category: GarmentCategory;
@@ -68,6 +71,7 @@ export interface CompanyMilestone {
 }
 
 export interface CatalogFilter {
+  readonly section: GarmentSection;
   readonly search: string;
   readonly categories: readonly GarmentCategory[];
   readonly era: GarmentEra | 'all';

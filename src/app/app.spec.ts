@@ -20,14 +20,14 @@ describe('App', () => {
     expect(fixture.componentInstance).toBeTruthy();
   });
 
-  it('should render header, main landmark, and footer', async () => {
+  it('should render header and main landmark without footer', async () => {
     const fixture = TestBed.createComponent(App);
     await fixture.whenStable();
     const element = fixture.nativeElement as HTMLElement;
 
     expect(element.querySelector('header')).toBeTruthy();
     expect(element.querySelector('main#main-content')).toBeTruthy();
-    expect(element.querySelector('footer')).toBeTruthy();
+    expect(element.querySelector('footer')).toBeNull();
     expect(element.querySelector('.brand-name')?.textContent).toContain('Sastrería & Diseños');
   });
 });

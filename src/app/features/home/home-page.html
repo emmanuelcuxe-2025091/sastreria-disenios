@@ -1,60 +1,37 @@
-<section class="hero">
-  <div class="container hero-grid">
-    <div class="hero-content">
-      <span class="eyebrow">Archivo de Confección · Desde {{ env.company.foundedYear }}</span>
-      <h1 class="hero-title">
-        Prendas que narran <em>{{ yearsInBusiness }} años</em> de sastrería y oficio.
-      </h1>
-      <p class="hero-lead">
-        Este catálogo reúne una selección curada de los trajes, piezas de gala, abrigos y camisería
-        que nuestra firma ha confeccionado a lo largo de su trayectoria para clientes particulares y
-        organizaciones exigentes.
-      </p>
+<section id="piezas" class="section section-catalog" aria-label="Catálogo de prendas">
+  <div class="container">
+    <div class="section-switcher" role="tablist" aria-label="Secciones de prendas">
+      <button
+        type="button"
+        role="tab"
+        class="switch-btn"
+        [class.is-active]="activeSection() === 'opciones'"
+        [attr.aria-selected]="activeSection() === 'opciones'"
+        (click)="selectSection('opciones')"
+      >
+        <span class="switch-label">Opciones de prendas</span>
+        <span class="switch-count">{{ catalog.sectionCounts().opciones }}</span>
+      </button>
 
-      <div class="hero-actions">
-        <a class="btn btn-primary" href="#piezas">Explorar prendas</a>
-      </div>
-
-      <dl class="hero-stats" aria-label="Cifras de trayectoria">
-        <div class="stat-item">
-          <dt>Años de oficio</dt>
-          <dd>+{{ yearsInBusiness }}</dd>
-        </div>
-        <div class="stat-item">
-          <dt>Prendas a medida</dt>
-          <dd>+1,400</dd>
-        </div>
-        <div class="stat-item">
-          <dt>Confección artesanal</dt>
-          <dd>100%</dd>
-        </div>
-      </dl>
+      <button
+        type="button"
+        role="tab"
+        class="switch-btn"
+        [class.is-active]="activeSection() === 'creadas'"
+        [attr.aria-selected]="activeSection() === 'creadas'"
+        (click)="selectSection('creadas')"
+      >
+        <span class="switch-label">Prendas creadas</span>
+        <span class="switch-count">{{ catalog.sectionCounts().creadas }}</span>
+      </button>
     </div>
 
-    <figure class="hero-visual">
-      <div class="hero-image-wrap">
-        <img
-          src="images/catalog/hero-atelier.jpg"
-          alt="Taller artesanal de Sastrería y Diseños con saco de lana sobre maniquí, telas italianas y tijeras de corte"
-          loading="eager"
-          fetchpriority="high"
-        />
-      </div>
-      <figcaption class="hero-caption">
-        <span class="caption-code">Taller Central · Patronaje Propio</span>
-        <span class="caption-note">Corte individual a tiza, lana merino y entretela flotante.</span>
-      </figcaption>
-    </figure>
-  </div>
-</section>
-
-<section id="piezas" class="section section-featured" aria-label="Catálogo de prendas">
-  <div class="container">
     <div class="section-row">
       <app-section-header
-        eyebrow="Catálogo de Prendas"
-        title="Piezas emblemáticas de nuestro archivo"
-        description="Explore nuestras confecciones filtrando por tipo de ropa o buscando por nombre, tejido, colección o año."
+        [eyebrow]="sectionMeta().eyebrow"
+        [title]="sectionMeta().title"
+        [description]="sectionMeta().description"
+        headingLevel="h1"
       />
     </div>
 
@@ -90,7 +67,7 @@
           (click)="selectAllCategories()"
         >
           Todas
-          <span class="chip-count">{{ catalog.totalGarments() }}</span>
+          <span class="chip-count">{{ catalog.totalSectionGarments() }}</span>
         </button>
 
         @for (category of catalog.categories; track category.id) {
@@ -136,7 +113,7 @@
         <h3>No encontramos prendas con los criterios seleccionados</h3>
         <p>
           Pruebe con otro término de búsqueda o restablezca los filtros para ver todas las prendas
-          del catálogo.
+          de esta sección.
         </p>
         <button type="button" class="btn btn-primary" (click)="resetFilters()">
           Ver todas las prendas

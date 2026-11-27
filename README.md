@@ -56,9 +56,9 @@ sastreria-disenios/
         │   ├── models/               # Contratos TypeScript de dominio
         │   ├── repositories/         # CatalogRepository, LocalCatalogRepository y PostgrestCatalogRepository
         │   └── services/             # CatalogStateService (Signals) y AtelierTitleStrategy
-        ├── shared/components/        # Header, Footer, GarmentCard y SectionHeader
+        ├── shared/components/        # Header, GarmentCard y SectionHeader
         └── features/
-            ├── home/                 # Página principal con portada editorial, búsqueda, filtros por tipo de prenda y grilla
+            ├── home/                 # Secciones "Opciones de prendas" y "Prendas creadas" con búsqueda y filtros múltiples
             ├── garment-detail/       # Ficha técnica completa y galería por prenda (/prenda/:slug)
             └── not-found/            # Página 404
 ```
