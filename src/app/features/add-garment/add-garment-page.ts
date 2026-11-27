@@ -10,8 +10,9 @@ import {
   Validators,
 } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { GarmentCategory, GarmentSection } from '../../core/models/catalog.models';
+import { Garment, GarmentCategory, GarmentSection } from '../../core/models/catalog.models';
 import { CatalogStateService } from '../../core/services/catalog-state.service';
+import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog';
 import { SectionHeaderComponent } from '../../shared/components/section-header/section-header';
 
 const MAX_IMAGES = 10;
@@ -21,6 +22,10 @@ interface UploadedImage {
   readonly dataUrl: string;
   readonly name: string;
 }
+
+type PendingDelete =
+  | { readonly kind: 'category'; readonly id: GarmentCategory; readonly label: string }
+  | { readonly kind: 'subtitle'; readonly value: string };
 
 type SpecRowForm = FormGroup<{
   subtitle: FormControl<string>;
@@ -75,7 +80,7 @@ function readAndOptimizeImage(file: File): Promise<string> {
 
 @Component({
   selector: 'app-add-garment-page',
-  imports: [ReactiveFormsModule, RouterLink, SectionHeaderComponent],
+  imports: [ReactiveFormsModule, RouterLink, SectionHeaderComponent, ConfirmDialogComponent],
   templateUrl: './add-garment-page.html',
   styleUrl: './add-garment-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -99,26 +104,50 @@ export class AddGarmentPageComponent implements OnInit {
     return list;
   });
 
+  protected readonly editingGarment = signal<Garment | null>(null);
+  protected readonly isEditMode = computed(() => this.editingGarment() !== null);
+  protected readonly editNotFound = signal<boolean>(false);
+
   protected readonly selectedSection = signal<GarmentSection>('opciones');
   protected readonly uploadedImages = signal<readonly UploadedImage[]>([]);
   protected readonly primaryImageIndex = signal<number>(0);
   protected readonly imageError = signal<string>('');
   protected readonly submittedAttempt = signal<boolean>(false);
 
-  // Inline creation of new garment type (filter)
+  // Inline creation / deletion of garment type filters
   protected readonly addingCategory = signal<boolean>(false);
   protected readonly newCategoryDraft = signal<string>('');
   protected readonly newCategoryError = signal<string>('');
 
-  // Inline creation of new Ficha de Confección subtitle for a specific row
+  // Inline creation / deletion of Ficha de Confección subtitles
   protected readonly addingSubtitleRow = signal<number | null>(null);
   protected readonly newSubtitleDraft = signal<string>('');
   protected readonly newSubtitleError = signal<string>('');
 
+  protected readonly pendingDelete = signal<PendingDelete | null>(null);
+
+  protected readonly deleteDialogMessage = computed(() => {
+    const pending = this.pendingDelete();
+    if (!pending) return '';
+    return pending.kind === 'category'
+      ? `¿Está seguro de eliminar el tipo de prenda "${pending.label}"? Dejará de aparecer en las opciones y filtros del catálogo.`
+      : `¿Está seguro de eliminar el subtítulo "${pending.value}" de la lista de Ficha de Confección?`;
+  });
+
   protected readonly canAddMoreImages = computed(() => this.uploadedImages().length < MAX_IMAGES);
+  protected readonly canDeleteCategory = computed(() => this.catalog.categories().length > 1);
+  protected readonly canDeleteAnySubtitle = computed(() => this.catalog.specSubtitles().length > 1);
+
+  protected readonly cancelRoute = computed(() => {
+    const editing = this.editingGarment();
+    return editing ? ['/prenda', editing.slug] : ['/'];
+  });
 
   protected readonly form = this.fb.group({
-    category: this.fb.control<GarmentCategory>('trajes-a-medida', [Validators.required]),
+    category: this.fb.control<GarmentCategory>(
+      this.catalog.categories()[0]?.id ?? 'trajes-a-medida',
+      [Validators.required],
+    ),
     title: this.fb.control<string>('', [
       requiredTrimmed,
       Validators.minLength(3),
@@ -142,8 +171,18 @@ export class AddGarmentPageComponent implements OnInit {
     return this.form.controls.specs;
   }
 
-  protected readonly sectionCopy = computed(() =>
-    this.selectedSection() === 'opciones'
+  protected readonly sectionCopy = computed(() => {
+    if (this.isEditMode()) {
+      return {
+        eyebrow: 'Modo Edición',
+        title: 'Editar prenda',
+        description:
+          'Modifique cualquiera de las opciones de la prenda: apartado, imágenes, foto principal, título, tipo, fecha y Ficha de Confección.',
+        submitLabel: 'Guardar cambios',
+      };
+    }
+
+    return this.selectedSection() === 'opciones'
       ? {
           eyebrow: 'Nueva Referencia',
           title: 'Agregar opción de prenda',
@@ -157,11 +196,27 @@ export class AddGarmentPageComponent implements OnInit {
           description:
             'Documente una prenda confeccionada en Prendas creadas. Suba hasta 10 imágenes, elija la principal y complete la Ficha de Confección obligatoria.',
           submitLabel: 'Guardar prenda creada',
-        },
-  );
+        };
+  });
 
   ngOnInit(): void {
-    void this.catalog.ensureLoaded();
+    void this.initializePage();
+  }
+
+  private async initializePage(): Promise<void> {
+    await this.catalog.ensureLoaded();
+
+    const editSlug = this.route.snapshot.paramMap.get('slug');
+    if (editSlug) {
+      const target = this.catalog.getGarmentBySlug(editSlug);
+      if (!target) {
+        this.editNotFound.set(true);
+        return;
+      }
+      this.hydrateFromGarment(target);
+      return;
+    }
+
     const querySection = this.route.snapshot.queryParamMap.get('seccion');
     if (querySection === 'opciones' || querySection === 'creadas') {
       this.selectedSection.set(querySection);
@@ -169,9 +224,62 @@ export class AddGarmentPageComponent implements OnInit {
       this.selectedSection.set(this.catalog.filter().section);
     }
 
-    // Ficha de Confección is mandatory: start with one required row ready to fill
     if (this.specsArray.length === 0) {
       this.addSpecRow();
+    }
+  }
+
+  private hydrateFromGarment(garment: Garment): void {
+    this.editingGarment.set(garment);
+    this.selectedSection.set(garment.section);
+
+    // Ensure garment's category exists in the options list
+    if (!this.catalog.categories().some((cat) => cat.id === garment.category)) {
+      this.catalog.addCategory(this.catalog.getCategoryLabel(garment.category));
+    }
+
+    const primaryIndex = Math.max(
+      0,
+      garment.images.findIndex((img) => img.isPrimary),
+    );
+    this.uploadedImages.set(
+      garment.images.map((img, i) => ({
+        dataUrl: img.url,
+        name: img.alt || `Fotografía ${i + 1}`,
+      })),
+    );
+    this.primaryImageIndex.set(primaryIndex);
+
+    this.form.patchValue({
+      category: garment.category,
+      title: garment.name,
+      description: garment.subtitle,
+      month: String(this.catalog.extractMonth(garment)),
+      year: String(garment.year),
+    });
+
+    this.specsArray.clear();
+    const rows = this.catalog.extractSpecRows(garment);
+    if (rows.length === 0) {
+      this.addSpecRow();
+    } else {
+      for (const row of rows) {
+        if (row.subtitle.trim()) {
+          this.catalog.addSpecSubtitle(row.subtitle);
+        }
+        this.specsArray.push(
+          this.fb.group({
+            subtitle: this.fb.control<string>(row.subtitle, [
+              requiredTrimmed,
+              Validators.maxLength(80),
+            ]),
+            description: this.fb.control<string>(row.description, [
+              requiredTrimmed,
+              Validators.maxLength(240),
+            ]),
+          }),
+        );
+      }
     }
   }
 
@@ -207,6 +315,16 @@ export class AddGarmentPageComponent implements OnInit {
     }
   }
 
+  protected deleteSelectedCategory(): void {
+    const currentId = this.form.controls.category.value;
+    if (!this.canDeleteCategory() || !currentId) {
+      return;
+    }
+
+    const label = this.catalog.getCategoryLabel(currentId);
+    this.pendingDelete.set({ kind: 'category', id: currentId, label });
+  }
+
   protected toggleAddSubtitle(rowIndex: number): void {
     const isSame = this.addingSubtitleRow() === rowIndex;
     this.addingSubtitleRow.set(isSame ? null : rowIndex);
@@ -234,6 +352,43 @@ export class AddGarmentPageComponent implements OnInit {
       this.newSubtitleDraft.set('');
       this.newSubtitleError.set('');
     }
+  }
+
+  protected deleteRowSubtitle(rowIndex: number): void {
+    const currentValue = this.specsArray.at(rowIndex).controls.subtitle.value;
+    if (!currentValue || !this.canDeleteAnySubtitle()) {
+      return;
+    }
+
+    this.pendingDelete.set({ kind: 'subtitle', value: currentValue });
+  }
+
+  protected confirmPendingDelete(): void {
+    const pending = this.pendingDelete();
+    if (!pending) return;
+
+    if (pending.kind === 'category') {
+      const removed = this.catalog.removeCategory(pending.id);
+      if (removed) {
+        const fallback = this.catalog.categories()[0]?.id ?? '';
+        this.form.controls.category.setValue(fallback);
+      }
+    } else {
+      const removed = this.catalog.removeSpecSubtitle(pending.value);
+      if (removed) {
+        for (const control of this.specsArray.controls) {
+          if (control.controls.subtitle.value === pending.value) {
+            control.controls.subtitle.setValue('');
+          }
+        }
+      }
+    }
+
+    this.pendingDelete.set(null);
+  }
+
+  protected cancelPendingDelete(): void {
+    this.pendingDelete.set(null);
   }
 
   protected async onFilesSelected(event: Event): Promise<void> {
@@ -366,7 +521,7 @@ export class AddGarmentPageComponent implements OnInit {
     ];
 
     const raw = this.form.getRawValue();
-    this.catalog.addGarment({
+    const payload = {
       section: this.selectedSection(),
       category: raw.category,
       title: raw.title,
@@ -378,8 +533,15 @@ export class AddGarmentPageComponent implements OnInit {
         subtitle: row.subtitle,
         description: row.description,
       })),
-    });
+    };
 
-    void this.router.navigate(['/']);
+    const editing = this.editingGarment();
+    if (editing) {
+      this.catalog.updateGarment(editing.id, payload);
+      void this.router.navigate(['/prenda', editing.slug]);
+    } else {
+      this.catalog.addGarment(payload);
+      void this.router.navigate(['/']);
+    }
   }
 }

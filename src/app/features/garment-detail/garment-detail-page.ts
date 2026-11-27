@@ -48,22 +48,7 @@ export class GarmentDetailPageComponent implements OnInit {
 
   protected readonly specRows = computed<readonly CustomSpecItem[]>(() => {
     const item = this.garment();
-    if (!item) return [];
-
-    if (item.customSpecs !== undefined) {
-      return item.customSpecs;
-    }
-
-    return [
-      { subtitle: 'Tejido principal', description: item.specs.fabric },
-      { subtitle: 'Forro y acabados', description: item.specs.lining },
-      { subtitle: 'Estructura interna', description: item.specs.construction },
-      {
-        subtitle: 'Dedicación artesanal',
-        description: `${item.specs.craftingHours} horas · ${item.specs.fittings} pruebas de ajuste`,
-      },
-      { subtitle: 'Ocasión recomendada', description: item.specs.occasion },
-    ];
+    return item ? this.catalog.extractSpecRows(item) : [];
   });
 
   protected readonly relatedGarments = computed(() => {

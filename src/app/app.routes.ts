@@ -16,6 +16,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'editar/:slug',
+    title: 'Editar Prenda',
+    loadComponent: () =>
+      import('./features/add-garment/add-garment-page').then(
+        (m) => m.AddGarmentPageComponent,
+      ),
+  },
+  {
     path: 'prenda/:slug',
     title: 'Ficha de Prenda',
     loadComponent: () =>

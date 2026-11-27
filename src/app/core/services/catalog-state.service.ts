@@ -8,6 +8,7 @@ import {
   CategoryMeta,
   CompanyMilestone,
   CreateGarmentInput,
+  CustomSpecItem,
   Garment,
   GarmentCategory,
   GarmentEra,
@@ -15,8 +16,11 @@ import {
 } from '../models/catalog.models';
 
 const STORAGE_KEY = 'expert_custom_garments_v1';
+const EDITED_GARMENTS_KEY = 'expert_edited_garments_v1';
 const CUSTOM_CATEGORIES_KEY = 'expert_custom_categories_v1';
+const DELETED_CATEGORIES_KEY = 'expert_deleted_categories_v1';
 const CUSTOM_SUBTITLES_KEY = 'expert_custom_subtitles_v1';
+const DELETED_SUBTITLES_KEY = 'expert_deleted_subtitles_v1';
 
 const DEFAULT_SPEC_SUBTITLES: readonly string[] = [
   'Tejido principal',
@@ -206,9 +210,12 @@ export class CatalogStateService {
         firstValueFrom(this.repository.getMilestones()),
       ]);
       const storedCustom = this.readStorageArray<Garment>(STORAGE_KEY);
+      const editedMap = this.readEditedMap();
       const existingIds = new Set(garments.map((item) => item.id));
       const uniqueCustom = storedCustom.filter((item) => !existingIds.has(item.id));
-      this._garments.set([...uniqueCustom, ...garments]);
+      const merged = [...uniqueCustom, ...garments].map((item) => editedMap[item.id] ?? item);
+
+      this._garments.set(merged);
       this._milestones.set(milestones);
       this._loaded.set(true);
     } finally {
@@ -220,25 +227,61 @@ export class CatalogStateService {
     const label = rawLabel.trim();
     if (!label) return null;
 
+    const id = slugify(label);
     const normalized = normalizeText(label);
     const existing = this._categories().find(
-      (cat) => normalizeText(cat.label) === normalized || cat.id === slugify(label),
+      (cat) => normalizeText(cat.label) === normalized || cat.id === id,
     );
     if (existing) {
       return existing;
     }
 
+    // If it was previously deleted, remove from deleted list
+    const deleted = this.readStorageArray<string>(DELETED_CATEGORIES_KEY).filter((d) => d !== id);
+    this.writeStorageArray(DELETED_CATEGORIES_KEY, deleted);
+
     const created: CategoryMeta = {
-      id: slugify(label),
+      id,
       label,
       shortLabel: label,
       description: `Prendas de la categoría ${label}.`,
     };
 
     this._categories.update((current) => [...current, created]);
-    const stored = this.readStorageArray<CategoryMeta>(CUSTOM_CATEGORIES_KEY);
+    const stored = this.readStorageArray<CategoryMeta>(CUSTOM_CATEGORIES_KEY).filter(
+      (c) => c.id !== id,
+    );
     this.writeStorageArray(CUSTOM_CATEGORIES_KEY, [...stored, created]);
     return created;
+  }
+
+  removeCategory(categoryId: GarmentCategory): boolean {
+    if (this._categories().length <= 1) {
+      return false;
+    }
+
+    const exists = this._categories().some((cat) => cat.id === categoryId);
+    if (!exists) {
+      return false;
+    }
+
+    this._categories.update((current) => current.filter((cat) => cat.id !== categoryId));
+    this._filter.update((current) => ({
+      ...current,
+      categories: current.categories.filter((id) => id !== categoryId),
+    }));
+
+    const storedCustom = this.readStorageArray<CategoryMeta>(CUSTOM_CATEGORIES_KEY).filter(
+      (cat) => cat.id !== categoryId,
+    );
+    this.writeStorageArray(CUSTOM_CATEGORIES_KEY, storedCustom);
+
+    const deleted = this.readStorageArray<string>(DELETED_CATEGORIES_KEY);
+    if (!deleted.includes(categoryId)) {
+      this.writeStorageArray(DELETED_CATEGORIES_KEY, [...deleted, categoryId]);
+    }
+
+    return true;
   }
 
   addSpecSubtitle(rawSubtitle: string): string | null {
@@ -251,10 +294,45 @@ export class CatalogStateService {
       return existing;
     }
 
+    const deleted = this.readStorageArray<string>(DELETED_SUBTITLES_KEY).filter(
+      (item) => normalizeText(item) !== normalized,
+    );
+    this.writeStorageArray(DELETED_SUBTITLES_KEY, deleted);
+
     this._specSubtitles.update((current) => [...current, subtitle]);
-    const stored = this.readStorageArray<string>(CUSTOM_SUBTITLES_KEY);
+    const stored = this.readStorageArray<string>(CUSTOM_SUBTITLES_KEY).filter(
+      (item) => normalizeText(item) !== normalized,
+    );
     this.writeStorageArray(CUSTOM_SUBTITLES_KEY, [...stored, subtitle]);
     return subtitle;
+  }
+
+  removeSpecSubtitle(rawSubtitle: string): boolean {
+    if (this._specSubtitles().length <= 1) {
+      return false;
+    }
+
+    const normalized = normalizeText(rawSubtitle);
+    const target = this._specSubtitles().find((item) => normalizeText(item) === normalized);
+    if (!target) {
+      return false;
+    }
+
+    this._specSubtitles.update((current) =>
+      current.filter((item) => normalizeText(item) !== normalized),
+    );
+
+    const storedCustom = this.readStorageArray<string>(CUSTOM_SUBTITLES_KEY).filter(
+      (item) => normalizeText(item) !== normalized,
+    );
+    this.writeStorageArray(CUSTOM_SUBTITLES_KEY, storedCustom);
+
+    const deleted = this.readStorageArray<string>(DELETED_SUBTITLES_KEY);
+    if (!deleted.some((item) => normalizeText(item) === normalized)) {
+      this.writeStorageArray(DELETED_SUBTITLES_KEY, [...deleted, target]);
+    }
+
+    return true;
   }
 
   addGarment(input: CreateGarmentInput): Garment {
@@ -266,19 +344,8 @@ export class CatalogStateService {
     const createdDateLabel = formatMonthYear(input.month, input.year);
     const isOption = input.section === 'opciones';
 
-    const cleanedSpecs = input.customSpecs
-      .map((spec) => ({
-        subtitle: spec.subtitle.trim(),
-        description: spec.description.trim(),
-      }))
-      .filter((spec) => spec.subtitle.length > 0 && spec.description.length > 0);
-
-    const galleryImages = input.images.slice(0, 10).map((url, idx) => ({
-      url,
-      alt: `${title} — fotografía ${idx + 1}`,
-      caption: `${title} — ${createdDateLabel}`,
-      isPrimary: idx === 0,
-    }));
+    const cleanedSpecs = this.cleanSpecs(input.customSpecs);
+    const galleryImages = this.buildImages(input.images, title, createdDateLabel);
 
     const garment: Garment = {
       id: `custom-${input.section}-${timestamp}`,
@@ -317,6 +384,90 @@ export class CatalogStateService {
     });
 
     return garment;
+  }
+
+  updateGarment(garmentId: string, input: CreateGarmentInput): Garment | null {
+    const current = this._garments().find((item) => item.id === garmentId);
+    if (!current) {
+      return null;
+    }
+
+    const title = input.title.trim();
+    const description = input.description.trim();
+    const createdDateLabel = formatMonthYear(input.month, input.year);
+    const isOption = input.section === 'opciones';
+    const cleanedSpecs = this.cleanSpecs(input.customSpecs);
+    const galleryImages = this.buildImages(input.images, title, createdDateLabel);
+
+    const updated: Garment = {
+      ...current,
+      section: input.section,
+      category: input.category,
+      name: title,
+      subtitle: description,
+      summary: description,
+      collection: isOption ? 'Opciones de Referencia' : 'Prendas Creadas',
+      year: input.year,
+      createdDateLabel,
+      era: resolveEra(input.year),
+      specs: {
+        ...current.specs,
+        fabric: cleanedSpecs[0]?.description ?? current.specs.fabric,
+      },
+      customSpecs: cleanedSpecs,
+      images: galleryImages,
+    };
+
+    this._garments.update((list) =>
+      list.map((item) => (item.id === garmentId ? updated : item)),
+    );
+
+    const customList = this.readStorageArray<Garment>(STORAGE_KEY);
+    if (customList.some((item) => item.id === garmentId)) {
+      this.writeStorageArray(
+        STORAGE_KEY,
+        customList.map((item) => (item.id === garmentId ? updated : item)),
+      );
+    } else {
+      const editedMap = this.readEditedMap();
+      editedMap[garmentId] = updated;
+      this.writeEditedMap(editedMap);
+    }
+
+    this._filter.update((filter) => ({
+      ...filter,
+      section: input.section,
+    }));
+
+    return updated;
+  }
+
+  extractSpecRows(garment: Garment): readonly CustomSpecItem[] {
+    if (garment.customSpecs !== undefined) {
+      return garment.customSpecs;
+    }
+
+    return [
+      { subtitle: 'Tejido principal', description: garment.specs.fabric },
+      { subtitle: 'Forro y acabados', description: garment.specs.lining },
+      { subtitle: 'Estructura interna', description: garment.specs.construction },
+      {
+        subtitle: 'Dedicación artesanal',
+        description: `${garment.specs.craftingHours} horas · ${garment.specs.fittings} pruebas de ajuste`,
+      },
+      { subtitle: 'Ocasión recomendada', description: garment.specs.occasion },
+    ];
+  }
+
+  extractMonth(garment: Garment): number {
+    if (garment.createdDateLabel) {
+      const firstWord = normalizeText(garment.createdDateLabel.split(' ')[0] ?? '');
+      const idx = SPANISH_MONTHS.findIndex((m) => normalizeText(m) === firstWord);
+      if (idx >= 0) {
+        return idx + 1;
+      }
+    }
+    return 1;
   }
 
   getGarmentBySlug(slug: string): Garment | null {
@@ -381,17 +532,68 @@ export class CatalogStateService {
     }));
   }
 
+  private cleanSpecs(specs: readonly CustomSpecItem[]): readonly CustomSpecItem[] {
+    return specs
+      .map((spec) => ({
+        subtitle: spec.subtitle.trim(),
+        description: spec.description.trim(),
+      }))
+      .filter((spec) => spec.subtitle.length > 0 && spec.description.length > 0);
+  }
+
+  private buildImages(images: readonly string[], title: string, createdDateLabel: string) {
+    return images.slice(0, 10).map((url, idx) => ({
+      url,
+      alt: `${title} — fotografía ${idx + 1}`,
+      caption: `${title} — ${createdDateLabel}`,
+      isPrimary: idx === 0,
+    }));
+  }
+
   private loadInitialCategories(): readonly CategoryMeta[] {
     const custom = this.readStorageArray<CategoryMeta>(CUSTOM_CATEGORIES_KEY);
+    const deleted = new Set(this.readStorageArray<string>(DELETED_CATEGORIES_KEY));
     const ids = new Set(CATALOG_CATEGORIES.map((c) => c.id));
-    return [...CATALOG_CATEGORIES, ...custom.filter((c) => c?.id && c?.label && !ids.has(c.id))];
+    const merged = [
+      ...CATALOG_CATEGORIES,
+      ...custom.filter((c) => c?.id && c?.label && !ids.has(c.id)),
+    ];
+    const active = merged.filter((cat) => !deleted.has(cat.id));
+    return active.length > 0 ? active : CATALOG_CATEGORIES;
   }
 
   private loadInitialSubtitles(): readonly string[] {
     const custom = this.readStorageArray<string>(CUSTOM_SUBTITLES_KEY);
+    const deleted = new Set(this.readStorageArray<string>(DELETED_SUBTITLES_KEY).map(normalizeText));
     const seen = new Set(DEFAULT_SPEC_SUBTITLES.map(normalizeText));
-    const extras = custom.filter((s) => typeof s === 'string' && s.trim() && !seen.has(normalizeText(s)));
-    return [...DEFAULT_SPEC_SUBTITLES, ...extras];
+    const extras = custom.filter(
+      (s) => typeof s === 'string' && s.trim() && !seen.has(normalizeText(s)),
+    );
+    const active = [...DEFAULT_SPEC_SUBTITLES, ...extras].filter(
+      (item) => !deleted.has(normalizeText(item)),
+    );
+    return active.length > 0 ? active : DEFAULT_SPEC_SUBTITLES;
+  }
+
+  private readEditedMap(): Record<string, Garment> {
+    try {
+      if (typeof localStorage === 'undefined') return {};
+      const raw = localStorage.getItem(EDITED_GARMENTS_KEY);
+      if (!raw) return {};
+      const parsed = JSON.parse(raw);
+      return parsed && typeof parsed === 'object' ? (parsed as Record<string, Garment>) : {};
+    } catch {
+      return {};
+    }
+  }
+
+  private writeEditedMap(map: Record<string, Garment>): void {
+    try {
+      if (typeof localStorage === 'undefined') return;
+      localStorage.setItem(EDITED_GARMENTS_KEY, JSON.stringify(map));
+    } catch {
+      // Ignore quota errors cleanly
+    }
   }
 
   private readStorageArray<T>(key: string): readonly T[] {

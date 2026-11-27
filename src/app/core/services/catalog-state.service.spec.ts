@@ -141,5 +141,33 @@ describe('CatalogStateService', () => {
     const addedSub = service.addSpecSubtitle('Tipo de Solapa');
     expect(addedSub).toBe('Tipo de Solapa');
     expect(service.specSubtitles().length).toBe(initialSubs + 1);
+
+    expect(service.removeCategory('pantalones-a-medida')).toBe(true);
+    expect(service.categories().length).toBe(initialCats);
+
+    expect(service.removeSpecSubtitle('Tipo de Solapa')).toBe(true);
+    expect(service.specSubtitles().length).toBe(initialSubs);
+  });
+
+  it('updates an existing garment cleanly across all options', () => {
+    const target = service.getGarmentBySlug('traje-cruzado-azul-medianoche');
+    expect(target).not.toBeNull();
+
+    const updated = service.updateGarment(target!.id, {
+      section: 'opciones',
+      category: 'gala-y-etiqueta',
+      title: 'Traje Editado Expert',
+      description: 'Actualización completa de la ficha de prueba.',
+      month: 3,
+      year: 2026,
+      images: ['data:image/png;base64,UPDATED='],
+      customSpecs: [{ subtitle: 'Tejido principal', description: 'Cachemira y seda' }],
+    });
+
+    expect(updated?.name).toBe('Traje Editado Expert');
+    expect(updated?.section).toBe('opciones');
+    expect(updated?.category).toBe('gala-y-etiqueta');
+    expect(updated?.createdDateLabel).toBe('Marzo 2026');
+    expect(updated?.customSpecs?.[0].description).toBe('Cachemira y seda');
   });
 });
