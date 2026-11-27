@@ -19,6 +19,11 @@ export interface GarmentImage {
   readonly isPrimary: boolean;
 }
 
+export interface CustomSpecItem {
+  readonly subtitle: string;
+  readonly description: string;
+}
+
 export interface TailoringSpec {
   readonly fabric: string;
   readonly lining: string;
@@ -45,6 +50,7 @@ export interface Garment {
   readonly story: string;
   readonly techniques: readonly string[];
   readonly specs: TailoringSpec;
+  readonly customSpecs?: readonly CustomSpecItem[];
   readonly images: readonly GarmentImage[];
 }
 
@@ -93,5 +99,6 @@ export interface CreateGarmentInput {
   readonly description: string;
   readonly month: number;
   readonly year: number;
-  readonly imageDataUrl: string;
+  readonly images: readonly string[];
+  readonly customSpecs: readonly CustomSpecItem[];
 }

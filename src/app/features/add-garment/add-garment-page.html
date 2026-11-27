@@ -35,51 +35,71 @@
 
     <form class="garment-form" [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
       <div class="field-group">
-        <label class="field-label" for="garment-image">
-          Imagen de la prenda <span class="required-mark" aria-hidden="true">*</span>
-        </label>
+        <div class="label-row">
+          <label class="field-label" for="garment-image">
+            Imágenes de la prenda <span class="required-mark" aria-hidden="true">*</span>
+          </label>
+          <span class="char-count">{{ uploadedImages().length }} / {{ maxImages }} imágenes</span>
+        </div>
 
-        <div class="upload-box" [class.has-error]="showError('imageDataUrl') || !!imageError()">
+        <div class="upload-box" [class.has-error]="showMissingImagesError() || !!imageError()">
           <input
             #fileInput
             id="garment-image"
             type="file"
+            multiple
             accept="image/png,image/jpeg,image/webp,image/gif"
             class="file-input"
-            (change)="onFileSelected($event)"
+            (change)="onFilesSelected($event)"
           />
 
-          @if (imagePreview(); as preview) {
-            <div class="preview-wrap">
-              <img [src]="preview" alt="Vista previa de la prenda" class="preview-img" />
-              <div class="preview-info">
-                <p class="preview-name">{{ imageFileName() }}</p>
-                <div class="preview-actions">
-                  <button type="button" class="btn btn-outline btn-sm" (click)="fileInput.click()">
-                    Cambiar imagen
-                  </button>
-                  <button
-                    type="button"
-                    class="remove-link"
-                    (click)="removeImage(fileInput)"
-                  >
-                    Quitar
-                  </button>
+          @if (uploadedImages().length > 0) {
+            <div class="preview-grid">
+              @for (img of uploadedImages(); track i; let i = $index) {
+                <div class="preview-card">
+                  <div class="preview-media">
+                    <img [src]="img.dataUrl" [alt]="'Vista previa ' + (i + 1)" />
+                    @if (i === 0) {
+                      <span class="primary-badge">Principal</span>
+                    }
+                  </div>
+                  <div class="preview-card-actions">
+                    @if (i > 0) {
+                      <button
+                        type="button"
+                        class="mini-link"
+                        (click)="setPrimaryImage(i)"
+                      >
+                        Principal
+                      </button>
+                    }
+                    <button type="button" class="remove-link" (click)="removeImage(i)">
+                      Quitar
+                    </button>
+                  </div>
                 </div>
-              </div>
+              }
             </div>
+
+            @if (canAddMoreImages()) {
+              <div class="add-more-wrap">
+                <button type="button" class="btn btn-outline btn-sm" (click)="fileInput.click()">
+                  + Agregar más imágenes ({{ maxImages - uploadedImages().length }} disponibles)
+                </button>
+              </div>
+            }
           } @else {
             <button type="button" class="upload-trigger" (click)="fileInput.click()">
-              <span class="upload-title">Subir imagen desde tu dispositivo</span>
-              <span class="upload-hint">JPG, PNG o WebP · Máximo 5 MB</span>
+              <span class="upload-title">Subir imágenes desde tu dispositivo</span>
+              <span class="upload-hint">Hasta {{ maxImages }} imágenes · JPG, PNG o WebP · Máx. 5 MB c/u</span>
             </button>
           }
         </div>
 
         @if (imageError()) {
           <p class="field-error" role="alert">{{ imageError() }}</p>
-        } @else if (showError('imageDataUrl')) {
-          <p class="field-error" role="alert">Debe subir una imagen de la prenda.</p>
+        } @else if (showMissingImagesError()) {
+          <p class="field-error" role="alert">Debe subir al menos una imagen de la prenda.</p>
         }
       </div>
 
@@ -131,7 +151,7 @@
           id="garment-description"
           class="field-input field-textarea"
           formControlName="description"
-          rows="4"
+          rows="3"
           maxlength="280"
           placeholder="Describa brevemente el corte, tejido principal o detalles destacados de la prenda..."
           [class.has-error]="showError('description')"
@@ -190,6 +210,73 @@
           </div>
         </div>
       </fieldset>
+
+      <section class="specs-builder" aria-label="Ficha de Confección" formArrayName="specs">
+        <div class="specs-header">
+          <div>
+            <h2 class="specs-title">Ficha de Confección</h2>
+            <p class="specs-hint">
+              Agregue subtítulos y breves descripciones las veces que desee (ej. Tejido principal,
+              Forro, Ocasión).
+            </p>
+          </div>
+          <button type="button" class="btn btn-outline btn-sm" (click)="addSpecRow()">
+            + Agregar detalle
+          </button>
+        </div>
+
+        @if (specsArray.controls.length > 0) {
+          <div class="spec-rows">
+            @for (row of specsArray.controls; track i; let i = $index) {
+              <div class="spec-row-card" [formGroupName]="i">
+                <div class="field-grid">
+                  <div class="field-group">
+                    <label class="field-label" [for]="'spec-subtitle-' + i">
+                      Subtítulo <span class="required-mark" aria-hidden="true">*</span>
+                    </label>
+                    <input
+                      [id]="'spec-subtitle-' + i"
+                      type="text"
+                      class="field-input"
+                      formControlName="subtitle"
+                      maxlength="80"
+                      placeholder="Ej. Tejido principal"
+                      [class.has-error]="showSpecError(i, 'subtitle')"
+                    />
+                    @if (showSpecError(i, 'subtitle')) {
+                      <p class="field-error" role="alert">Ingrese un subtítulo.</p>
+                    }
+                  </div>
+
+                  <div class="field-group">
+                    <label class="field-label" [for]="'spec-desc-' + i">
+                      Breve descripción <span class="required-mark" aria-hidden="true">*</span>
+                    </label>
+                    <input
+                      [id]="'spec-desc-' + i"
+                      type="text"
+                      class="field-input"
+                      formControlName="description"
+                      maxlength="240"
+                      placeholder="Ej. Lana merino italiana Super 150s"
+                      [class.has-error]="showSpecError(i, 'description')"
+                    />
+                    @if (showSpecError(i, 'description')) {
+                      <p class="field-error" role="alert">Ingrese una breve descripción.</p>
+                    }
+                  </div>
+                </div>
+
+                <div class="spec-row-footer">
+                  <button type="button" class="remove-link" (click)="removeSpecRow(i)">
+                    Quitar detalle
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </section>
 
       <div class="form-actions">
         <button type="submit" class="btn btn-primary">{{ sectionCopy().submitLabel }}</button>

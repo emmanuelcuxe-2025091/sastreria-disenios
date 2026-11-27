@@ -103,7 +103,8 @@ describe('CatalogStateService', () => {
     expect(related.some((item) => item.slug === garment!.slug)).toBe(false);
   });
 
-  it('adds new garments to opciones and creadas with formatted month and year', () => {
+  it('adds new garments to opciones and creadas with custom specs and max 10 images', () => {
+    const twelveImages = Array.from({ length: 12 }, (_, i) => `data:image/png;base64,IMG${i}`);
     const added = service.addGarment({
       section: 'opciones',
       category: 'sastreria-femenina',
@@ -111,11 +112,17 @@ describe('CatalogStateService', () => {
       description: 'Blazer entallado de referencia en lana fría azul marino.',
       month: 5,
       year: 2026,
-      imageDataUrl: 'data:image/png;base64,iVBORw0KGgo=',
+      images: twelveImages,
+      customSpecs: [
+        { subtitle: 'Tejido', description: 'Lana fría italiana' },
+        { subtitle: 'Forro', description: 'Seda natural' },
+      ],
     });
 
     expect(added.section).toBe('opciones');
     expect(added.createdDateLabel).toBe('Mayo 2026');
+    expect(added.images.length).toBe(10);
+    expect(added.customSpecs?.length).toBe(2);
     expect(service.sectionCounts().opciones).toBe(7);
     expect(service.getGarmentBySlug(added.slug)?.name).toBe('Blazer Referencia Expert');
   });

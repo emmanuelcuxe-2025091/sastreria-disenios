@@ -135,7 +135,7 @@ export class CatalogStateService {
           garment.specs.fabric,
           garment.specs.occasion,
           String(garment.year),
-          ...garment.techniques,
+          ...(garment.customSpecs?.flatMap((spec) => [spec.subtitle, spec.description]) ?? []),
         ].join(' '),
       );
 
@@ -207,6 +207,20 @@ export class CatalogStateService {
     const createdDateLabel = formatMonthYear(input.month, input.year);
     const isOption = input.section === 'opciones';
 
+    const cleanedSpecs = input.customSpecs
+      .map((spec) => ({
+        subtitle: spec.subtitle.trim(),
+        description: spec.description.trim(),
+      }))
+      .filter((spec) => spec.subtitle.length > 0 && spec.description.length > 0);
+
+    const galleryImages = input.images.slice(0, 10).map((url, idx) => ({
+      url,
+      alt: `${title} — fotografía ${idx + 1}`,
+      caption: `${title} — ${createdDateLabel}`,
+      isPrimary: idx === 0,
+    }));
+
     const garment: Garment = {
       id: `custom-${input.section}-${timestamp}`,
       code: `${prefix}-${input.year}-${sequence}`,
@@ -221,26 +235,18 @@ export class CatalogStateService {
       era: resolveEra(input.year),
       featured: false,
       summary: description,
-      story: isOption
-        ? `Opción de prenda registrada en el catálogo de Expert (${createdDateLabel}).`
-        : `Prenda confeccionada a medida por Expert en ${createdDateLabel}.`,
-      techniques: ['Confección a medida Expert', 'Patronaje personalizado'],
+      story: '',
+      techniques: [],
       specs: {
-        fabric: 'Tejido seleccionado a medida',
-        lining: 'Forro transpirable de alta calidad',
-        construction: 'Confección artesanal personalizada',
-        craftingHours: 40,
-        fittings: 3,
-        occasion: isOption ? 'Personalizable según ocasión' : 'Elaboración exclusiva a medida',
+        fabric: cleanedSpecs[0]?.description ?? (isOption ? 'Referencia a medida' : 'Confección a medida'),
+        lining: '',
+        construction: '',
+        craftingHours: 0,
+        fittings: 0,
+        occasion: '',
       },
-      images: [
-        {
-          url: input.imageDataUrl,
-          alt: title,
-          caption: `${title} — ${createdDateLabel}`,
-          isPrimary: true,
-        },
-      ],
+      customSpecs: cleanedSpecs,
+      images: galleryImages,
     };
 
     this._garments.update((current) => [garment, ...current]);

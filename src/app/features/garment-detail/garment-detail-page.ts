@@ -11,6 +11,7 @@ import {
 import { Title } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
 import { APP_ENVIRONMENT } from '../../core/config/catalog.tokens';
+import { CustomSpecItem } from '../../core/models/catalog.models';
 import { CatalogStateService } from '../../core/services/catalog-state.service';
 import { GarmentCardComponent } from '../../shared/components/garment-card/garment-card';
 
@@ -43,6 +44,26 @@ export class GarmentDetailPageComponent implements OnInit {
   protected readonly categoryLabel = computed(() => {
     const item = this.garment();
     return item ? this.catalog.getCategoryLabel(item.category) : '';
+  });
+
+  protected readonly specRows = computed<readonly CustomSpecItem[]>(() => {
+    const item = this.garment();
+    if (!item) return [];
+
+    if (item.customSpecs !== undefined) {
+      return item.customSpecs;
+    }
+
+    return [
+      { subtitle: 'Tejido principal', description: item.specs.fabric },
+      { subtitle: 'Forro y acabados', description: item.specs.lining },
+      { subtitle: 'Estructura interna', description: item.specs.construction },
+      {
+        subtitle: 'Dedicación artesanal',
+        description: `${item.specs.craftingHours} horas · ${item.specs.fittings} pruebas de ajuste`,
+      },
+      { subtitle: 'Ocasión recomendada', description: item.specs.occasion },
+    ];
   });
 
   protected readonly relatedGarments = computed(() => {
