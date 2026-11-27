@@ -10,8 +10,8 @@ import { RouterLink } from '@angular/router';
         <span class="eyebrow">Error 404</span>
         <h1>Página no encontrada</h1>
         <p>
-          La dirección solicitada no forma parte del catálogo de Sastrería &amp; Diseños. Puede
-          regresar al inicio o explorar nuestras prendas documentadas.
+          La dirección solicitada no forma parte del catálogo de Expert. Puede
+          regresar al inicio para explorar las prendas documentadas.
         </p>
         <div class="actions">
           <a class="btn btn-primary" routerLink="/">Volver al inicio</a>

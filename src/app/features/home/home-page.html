@@ -1,29 +1,39 @@
 <section id="piezas" class="section section-catalog" aria-label="Catálogo de prendas">
   <div class="container">
-    <div class="section-switcher" role="tablist" aria-label="Secciones de prendas">
-      <button
-        type="button"
-        role="tab"
-        class="switch-btn"
-        [class.is-active]="activeSection() === 'opciones'"
-        [attr.aria-selected]="activeSection() === 'opciones'"
-        (click)="selectSection('opciones')"
-      >
-        <span class="switch-label">Opciones de prendas</span>
-        <span class="switch-count">{{ catalog.sectionCounts().opciones }}</span>
-      </button>
+    <div class="top-bar">
+      <div class="section-switcher" role="tablist" aria-label="Secciones de prendas">
+        <button
+          type="button"
+          role="tab"
+          class="switch-btn"
+          [class.is-active]="activeSection() === 'opciones'"
+          [attr.aria-selected]="activeSection() === 'opciones'"
+          (click)="selectSection('opciones')"
+        >
+          <span class="switch-label">Opciones de prendas</span>
+          <span class="switch-count">{{ catalog.sectionCounts().opciones }}</span>
+        </button>
 
-      <button
-        type="button"
-        role="tab"
-        class="switch-btn"
-        [class.is-active]="activeSection() === 'creadas'"
-        [attr.aria-selected]="activeSection() === 'creadas'"
-        (click)="selectSection('creadas')"
+        <button
+          type="button"
+          role="tab"
+          class="switch-btn"
+          [class.is-active]="activeSection() === 'creadas'"
+          [attr.aria-selected]="activeSection() === 'creadas'"
+          (click)="selectSection('creadas')"
+        >
+          <span class="switch-label">Prendas creadas</span>
+          <span class="switch-count">{{ catalog.sectionCounts().creadas }}</span>
+        </button>
+      </div>
+
+      <a
+        class="btn btn-primary add-cta"
+        routerLink="/agregar"
+        [queryParams]="{ seccion: activeSection() }"
       >
-        <span class="switch-label">Prendas creadas</span>
-        <span class="switch-count">{{ catalog.sectionCounts().creadas }}</span>
-      </button>
+        + Agregar prenda
+      </a>
     </div>
 
     <div class="section-row">

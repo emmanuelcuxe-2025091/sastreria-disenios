@@ -11,7 +11,7 @@
         />
       }
       <div class="media-meta">
-        <span class="badge-year">{{ garment().year }}</span>
+        <span class="badge-year">{{ garment().createdDateLabel ?? garment().year }}</span>
         <span class="badge-code">{{ garment().code }}</span>
       </div>
     </div>

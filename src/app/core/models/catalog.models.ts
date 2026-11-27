@@ -38,6 +38,7 @@ export interface Garment {
   readonly category: GarmentCategory;
   readonly collection: string;
   readonly year: number;
+  readonly createdDateLabel?: string;
   readonly era: GarmentEra;
   readonly featured: boolean;
   readonly summary: string;
@@ -83,4 +84,14 @@ export interface CraftsmanshipPillar {
   readonly title: string;
   readonly description: string;
   readonly metric: string;
+}
+
+export interface CreateGarmentInput {
+  readonly section: GarmentSection;
+  readonly category: GarmentCategory;
+  readonly title: string;
+  readonly description: string;
+  readonly month: number;
+  readonly year: number;
+  readonly imageDataUrl: string;
 }

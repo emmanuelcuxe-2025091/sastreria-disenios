@@ -1,0 +1,200 @@
+<section class="add-section">
+  <div class="container add-container">
+    <div class="section-switcher" role="tablist" aria-label="Tipo de registro">
+      <button
+        type="button"
+        role="tab"
+        class="switch-btn"
+        [class.is-active]="selectedSection() === 'opciones'"
+        [attr.aria-selected]="selectedSection() === 'opciones'"
+        (click)="selectSection('opciones')"
+      >
+        Opción de prenda
+      </button>
+
+      <button
+        type="button"
+        role="tab"
+        class="switch-btn"
+        [class.is-active]="selectedSection() === 'creadas'"
+        [attr.aria-selected]="selectedSection() === 'creadas'"
+        (click)="selectSection('creadas')"
+      >
+        Prenda creada
+      </button>
+    </div>
+
+    <div class="header-wrap">
+      <app-section-header
+        [eyebrow]="sectionCopy().eyebrow"
+        [title]="sectionCopy().title"
+        [description]="sectionCopy().description"
+        headingLevel="h1"
+      />
+    </div>
+
+    <form class="garment-form" [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+      <div class="field-group">
+        <label class="field-label" for="garment-image">
+          Imagen de la prenda <span class="required-mark" aria-hidden="true">*</span>
+        </label>
+
+        <div class="upload-box" [class.has-error]="showError('imageDataUrl') || !!imageError()">
+          <input
+            #fileInput
+            id="garment-image"
+            type="file"
+            accept="image/png,image/jpeg,image/webp,image/gif"
+            class="file-input"
+            (change)="onFileSelected($event)"
+          />
+
+          @if (imagePreview(); as preview) {
+            <div class="preview-wrap">
+              <img [src]="preview" alt="Vista previa de la prenda" class="preview-img" />
+              <div class="preview-info">
+                <p class="preview-name">{{ imageFileName() }}</p>
+                <div class="preview-actions">
+                  <button type="button" class="btn btn-outline btn-sm" (click)="fileInput.click()">
+                    Cambiar imagen
+                  </button>
+                  <button
+                    type="button"
+                    class="remove-link"
+                    (click)="removeImage(fileInput)"
+                  >
+                    Quitar
+                  </button>
+                </div>
+              </div>
+            </div>
+          } @else {
+            <button type="button" class="upload-trigger" (click)="fileInput.click()">
+              <span class="upload-title">Subir imagen desde tu dispositivo</span>
+              <span class="upload-hint">JPG, PNG o WebP · Máximo 5 MB</span>
+            </button>
+          }
+        </div>
+
+        @if (imageError()) {
+          <p class="field-error" role="alert">{{ imageError() }}</p>
+        } @else if (showError('imageDataUrl')) {
+          <p class="field-error" role="alert">Debe subir una imagen de la prenda.</p>
+        }
+      </div>
+
+      <div class="field-grid">
+        <div class="field-group">
+          <label class="field-label" for="garment-title">
+            Título <span class="required-mark" aria-hidden="true">*</span>
+          </label>
+          <input
+            id="garment-title"
+            type="text"
+            class="field-input"
+            formControlName="title"
+            maxlength="100"
+            placeholder="Ej. Traje Cruzado Lana Merino"
+            [class.has-error]="showError('title')"
+          />
+          @if (showError('title')) {
+            <p class="field-error" role="alert">
+              @if (form.controls.title.hasError('required')) {
+                El título es obligatorio.
+              } @else {
+                Ingrese un título de al menos 3 caracteres.
+              }
+            </p>
+          }
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="garment-category">
+            Tipo de prenda <span class="required-mark" aria-hidden="true">*</span>
+          </label>
+          <select id="garment-category" class="field-input" formControlName="category">
+            @for (category of catalog.categories; track category.id) {
+              <option [value]="category.id">{{ category.label }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <div class="label-row">
+          <label class="field-label" for="garment-description">
+            Breve descripción <span class="required-mark" aria-hidden="true">*</span>
+          </label>
+          <span class="char-count">{{ form.controls.description.value.length }} / 280</span>
+        </div>
+        <textarea
+          id="garment-description"
+          class="field-input field-textarea"
+          formControlName="description"
+          rows="4"
+          maxlength="280"
+          placeholder="Describa brevemente el corte, tejido principal o detalles destacados de la prenda..."
+          [class.has-error]="showError('description')"
+        ></textarea>
+        @if (showError('description')) {
+          <p class="field-error" role="alert">
+            @if (form.controls.description.hasError('required')) {
+              La descripción es obligatoria.
+            } @else {
+              Escriba una breve descripción de al menos 10 caracteres.
+            }
+          </p>
+        }
+      </div>
+
+      <fieldset class="date-fieldset">
+        <legend class="field-label">
+          Fecha de creación (mes y año) <span class="required-mark" aria-hidden="true">*</span>
+        </legend>
+
+        <div class="field-grid">
+          <div class="field-group">
+            <label class="sr-only" for="garment-month">Mes de creación</label>
+            <select
+              id="garment-month"
+              class="field-input"
+              formControlName="month"
+              [class.has-error]="showError('month')"
+            >
+              <option value="" disabled>Seleccione el mes</option>
+              @for (monthName of catalog.months; track monthName; let idx = $index) {
+                <option [value]="idx + 1">{{ monthName }}</option>
+              }
+            </select>
+            @if (showError('month')) {
+              <p class="field-error" role="alert">Seleccione el mes de creación.</p>
+            }
+          </div>
+
+          <div class="field-group">
+            <label class="sr-only" for="garment-year">Año de creación</label>
+            <select
+              id="garment-year"
+              class="field-input"
+              formControlName="year"
+              [class.has-error]="showError('year')"
+            >
+              <option value="" disabled>Seleccione el año</option>
+              @for (yearOption of years(); track yearOption) {
+                <option [value]="yearOption">{{ yearOption }}</option>
+              }
+            </select>
+            @if (showError('year')) {
+              <p class="field-error" role="alert">Seleccione el año de creación.</p>
+            }
+          </div>
+        </div>
+      </fieldset>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">{{ sectionCopy().submitLabel }}</button>
+        <a class="btn btn-outline" routerLink="/">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</section>
